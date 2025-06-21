@@ -1,5 +1,5 @@
 import { Player } from "./player.js";
-import { GIF } from "../utils/gif.js"
+import { GIF } from "./gif.js"
 
 //将人物贴进页面中
 export class Kyo extends Player {

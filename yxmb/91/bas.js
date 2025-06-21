@@ -1,6 +1,6 @@
 // 地图
-import {AcGameObject} from '../ac_game_object/base.js';
-import {Controller} from '../controller/base.js';
+import {AcGameObject} from './ase.js';
+import {Controller} from './case.js';
 //定义地图，继承自AcGameObject
 class GameMap extends AcGameObject {
     constructor(root) {
