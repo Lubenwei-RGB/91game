@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>牢大直升机跑酷</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #000;
+            overflow: hidden;
+            font-family: 'Arial Rounded MT Bold', 'Arial', sans-serif;
+            touch-action: manipulation;
+            color: #fff;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(circle at center, #1a1a2e 0%, #0d0d1a 100%);
+        }
+        #gameContainer {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            height: 90vh;
+            overflow: hidden;
+            border-radius: 12px;
+            box-shadow: 0 0 30px rgba(255, 69, 58, 0.4);
+        }
+        #gameCanvas {
+            display: block;
+            background: linear-gradient(to bottom, #1a1a2e, #0f1529, #0a0e1e);
+        }
+        #gameOver {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #ff6b81;
+            font-size: 42px;
+            text-align: center;
+            display: none;
+            z-index: 100;
+            background: rgba(10, 10, 30, 0.85);
+            padding: 30px 40px;
+            border-radius: 20px;
+            border: 3px solid #ff4757;
+            text-shadow: 0 0 10px rgba(255, 107, 129, 0.7);
+            width: 85%;
+            max-width: 500px;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 15px rgba(255, 69, 58, 0.5); }
+            50% { box-shadow: 0 0 25px rgba(255, 69, 58, 0.8); }
+            100% { box-shadow: 0 0 15px rgba(255, 69, 58, 0.5); }
+        }
+        #score {
+            position: absolute;
+            top: 25px;
+            left: 25px;
+            color: #ffd700;
+            font-size: 32px;
+            z-index: 10;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 10px 20px;
+            border-radius: 15px;
+            font-weight: bold;
+            text-shadow: 0 0 8px rgba(255, 215, 0, 0.7);
+            border: 2px solid rgba(255, 215, 0, 0.5);
+        }
+        #controls {
+            position: absolute;
+            bottom: 25px;
+            width: 100%;
+            text-align: center;
+            color: #a0a0ff;
+            font-size: 18px;
+            z-index: 10;
+            background: rgba(0, 0, 20, 0.6);
+            padding: 12px;
+            border-top: 2px solid rgba(100, 100, 255, 0.3);
+        }
+        #restartBtn {
+            margin-top: 20px;
+            padding: 15px 35px;
+            font-size: 26px;
+            background: linear-gradient(to right, #ff4757, #ff6b81);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+            letter-spacing: 1px;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 5px 15px rgba(255, 69, 58, 0.4);
+        }
+        #restartBtn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(255, 69, 58, 0.6);
+        }
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #ffd700;
+            font-size: 32px;
+            text-align: center;
+            z-index: 100;
+            background: rgba(10, 10, 30, 0.9);
+            padding: 40px;
+            border-radius: 20px;
+            border: 2px solid #ffd700;
+            max-width: 90%;
+            width: 400px;
+        }
+        #title {
+            position: absolute;
+            top: 25px;
+            width: 100%;
+            text-align: center;
+            color: #ffd700;
+            font-size: 42px;
+            z-index: 10;
+            text-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
+            letter-spacing: 2px;
+            font-weight: bold;
+        }
+        #virtualControls {
+            position: absolute;
+            bottom: 100px;
+            left: 25px;
+            z-index: 10;
+        }
+        #virtualControls .menu-btn {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(to bottom, #4a4aff, #2a2acf);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 32px;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+            box-shadow: 0 5px 15px rgba(0, 0, 100, 0.5);
+            cursor: pointer;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+        #virtualControls .control-panel {
+            display: none;
+            position: absolute;
+            bottom: 80px;
+            left: 0;
+            background: rgba(20, 20, 50, 0.9);
+            border-radius: 20px;
+            padding: 15px;
+            border: 2px solid rgba(100, 100, 255, 0.5);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+        }
+        #virtualControls .control-panel.active {
+            display: block;
+            animation: slideUp 0.4s ease-out;
+        }
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        #virtualControls .control-row {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 12px;
+        }
+        #virtualControls .control-btn {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(to bottom, #5a5aff, #3a3adf);
+            border-radius: 15px;
+            margin: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 32px;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+            box-shadow: 0 5px 15px rgba(0, 0, 100, 0.4);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.1s;
+        }
+        #virtualControls .control-btn:active {
+            transform: scale(0.95);
+            background: linear-gradient(to bottom, #4a4aff, #2a2acf);
+        }
+        #virtualControls .up-btn {
+            margin-bottom: 8px;
+        }
+        #virtualControls .space-btn {
+            width: 160px;
+            font-size: 24px;
+        }
+        #finalScore {
+            color: #ffd700;
+            font-size: 48px;
+            margin: 15px 0;
+            display: block;
+        }
+        #gameOverText {
+            color: #ff6b81;
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+        .instructions {
+            margin-top: 10px;
+            color: #a0a0ff;
+            font-size: 16px;
+        }
+        .warning {
+            position: absolute;
+            top: 80px;
+            right: 20px;
+            color: #ff6b6b;
+            font-size: 18px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 8px 15px;
+            border-radius: 10px;
+            border: 1px solid #ff6b6b;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <div id="title">牢大直升机跑酷</div>
+        <div class="warning">闪电需躲避 | ru2可肘碎</div>
+        <div id="loading">
+            <div>加载游戏中...</div>
+            <div class="instructions">请稍候，牢大正在热身</div>
+        </div>
+        <canvas id="gameCanvas"></canvas>
+        <div id="score">分数: 0</div>
+        <div id="gameOver">
+            <div id="gameOverText">复活赛加载中...</div>
+            <div class="instructions">最终分数: <span id="finalScore">0</span></div>
+            <button id="restartBtn">再肘一次</button>
+        </div>
+        <div id="controls">
+            空格键/点击屏幕: 肘击 | 上下箭头: 控制高度
+            <div class="instructions">肘击可击碎"ru2"弹幕，但无法击碎闪电！</div>
+        </div>
+
+        <div id="virtualControls">
+            <div class="menu-btn" id="menuBtn">≡</div>
+            <div class="control-panel" id="controlPanel">
+                <div class="control-row">
+                    <div class="control-btn up-btn" id="upBtn">↑</div>
+                </div>
+                <div class="control-row">
+                    <div class="control-btn" id="leftBtn">←</div>
+                    <div class="control-btn" id="downBtn">↓</div>
+                    <div class="control-btn" id="rightBtn">→</div>
+                </div>
+                <div class="control-row">
+                    <div class="control-btn space-btn" id="spaceBtn">肘击</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <audio id="elbowSound" preload="auto">
+        <source src="sound.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="crashSound" preload="auto">
+        <source src="crash.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        // 游戏变量
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const container = document.getElementById('gameContainer');
+        const scoreElement = document.getElementById('score');
+        const gameOverElement = document.getElementById('gameOver');
+        const finalScoreElement = document.getElementById('finalScore');
+        const restartBtn = document.getElementById('restartBtn');
+        const loadingElement = document.getElementById('loading');
+        const elbowSound = document.getElementById('elbowSound');
+        const crashSound = document.getElementById('crashSound');
+        const menuBtn = document.getElementById('menuBtn');
+        const controlPanel = document.getElementById('controlPanel');
+        const upBtn = document.getElementById('upBtn');
+        const downBtn = document.getElementById('downBtn');
+        const spaceBtn = document.getElementById('spaceBtn');
+        
+        // 设置画布大小
+        function resizeCanvas() {
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+        }
+        resizeCanvas();
+        
+        // 游戏状态
+        let gameRunning = true;
+        let score = 0;
+        let gameSpeed = 3;
+        let assetsLoaded = 0;
+        const totalAssets = 4;
+        
+        // 虚拟按键状态
+        let upPressed = false;
+        let downPressed = false;
+        
+        // 资源加载函数
+        function assetLoaded() {
+            assetsLoaded++;
+            console.log(`资源加载进度: ${assetsLoaded}/${totalAssets}`);
+            if (assetsLoaded === totalAssets) {
+                loadingElement.style.display = 'none';
+                console.log("所有资源加载完成，开始游戏");
+                requestAnimationFrame(gameLoop);
+            }
+        }
+        
+        // 加载牢大图片
+        const laodaImg = new Image();
+        laodaImg.onload = function() {
+            console.log("牢大图片加载成功");
+            assetLoaded();
+        };
+        laodaImg.onerror = function() {
+            console.log("牢大图片加载失败，将使用绘制版本");
+            assetLoaded();
+        };
+        laodaImg.src = 'man.png';
+        
+        // 加载直升机图片
+        const helicopterImg = new Image();
+        helicopterImg.onload = function() {
+            console.log("直升机图片加载成功");
+            assetLoaded();
+        };
+        helicopterImg.onerror = function() {
+            console.log("直升机图片加载失败，将使用绘制版本");
+            assetLoaded();
+        };
+        helicopterImg.src = 'helicopter.png';
+        
+        // 加载障碍物图片
+        const obstacle1Img = new Image();
+        obstacle1Img.onload = function() {
+            console.log("障碍物1图片加载成功");
+            assetLoaded();
+        };
+        obstacle1Img.onerror = function() {
+            console.log("障碍物1图片加载失败，将使用绘制版本");
+            assetLoaded();
+        };
+        obstacle1Img.src = 'ru1.png';
+        
+        const obstacle2Img = new Image();
+        obstacle2Img.onload = function() {
+            console.log("障碍物2图片加载成功");
+            assetLoaded();
+        };
+        obstacle2Img.onerror = function() {
+            console.log("障碍物2图片加载失败，将使用绘制版本");
+            assetLoaded();
+        };
+        obstacle2Img.src = 'ru2.png';
+        
+        // 玩家对象
+        const player = {
+            x: 150,
+            y: canvas.height / 2,
+            width: 230,
+            height: 125,
+            speedY: 0,
+            gravity: 0.1,
+            isElbowing: false,
+            elbowingFrames: 0,
+            draw: function() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                
+                // 根据飞行方向调整角度
+                let angle = this.speedY * 0.05;
+                ctx.rotate(angle);
+                
+                // 绘制直升机（图片或绘制版本）
+                if (helicopterImg.complete && helicopterImg.naturalWidth !== 0) {
+                    ctx.drawImage(helicopterImg, -this.width/2, -this.height/2, this.width, this.height);
+                } else {
+                    // 绘制简笔直升机
+                    ctx.fillStyle = '#555';
+                    ctx.fillRect(-this.width/2, -this.height/2, this.width, this.height);
+                    ctx.fillRect(this.width/2-20, -this.height/4, 40, this.height/2);
+                    
+                    // 螺旋桨
+                    ctx.strokeStyle = '#333';
+                    ctx.lineWidth = 5;
+                    ctx.beginPath();
+                    ctx.moveTo(-this.width/2, -this.height/2-10);
+                    ctx.lineTo(this.width/2, -this.height/2-10);
+                    ctx.moveTo(-this.width/2, this.height/2+10);
+                    ctx.lineTo(this.width/2, this.height/2+10);
+                    ctx.stroke();
+                }
+                
+                // 绘制牢大（图片或绘制版本）
+                if (laodaImg.complete && laodaImg.naturalWidth !== 0) {
+                    const laodaWidth = this.width * 0.5;
+                    const laodaHeight = laodaWidth;
+                    ctx.drawImage(
+                        laodaImg, 
+                        -laodaWidth/2, 
+                        -laodaHeight/2, 
+                        laodaWidth, 
+                        laodaHeight
+                    );
+                } else {
+                    // 绘制简笔牢大
+                    const headRadius = this.width * 0.15;
+                    ctx.fillStyle = '#8B4513';
+                    ctx.beginPath();
+                    ctx.arc(0, 0, headRadius, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // 绘制球衣号码
+                    ctx.fillStyle = '#000';
+                    ctx.font = `bold ${headRadius}px Arial`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('24', 0, 0);
+                }
+                
+                // 绘制肘击效果
+                if (this.isElbowing) {
+                    ctx.fillStyle = 'rgba(255, 0, 0, 0.7)';
+                    ctx.beginPath();
+                    ctx.arc(this.width/2, 0, this.width * 0.2, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // 绘制肘击特效
+                    ctx.fillStyle = 'rgba(255, 215, 0, 0.5)';
+                    ctx.beginPath();
+                    ctx.arc(this.width/2 + 10, 0, this.width * 0.3, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                ctx.restore();
+            },
+            update: function() {
+                // 应用重力
+                this.speedY += this.gravity;
+                
+                // 应用虚拟按键控制
+                if (upPressed) this.speedY = -3.5;
+                if (downPressed) this.speedY = 3.5;
+                
+                this.y += this.speedY;
+                
+                // 限制玩家不能飞出屏幕
+                if (this.y < this.height/2) {
+                    this.y = this.height/2;
+                    this.speedY = 0;
+                }
+                if (this.y > canvas.height - this.height/2) {
+                    this.y = canvas.height - this.height/2;
+                    this.speedY = 0;
+                }
+                
+                // 肘击动画
+                if (this.isElbowing) {
+                    this.elbowingFrames++;
+                    if (this.elbowingFrames > 15) {
+                        this.isElbowing = false;
+                        this.elbowingFrames = 0;
+                    }
+                }
+            },
+            elbow: function() {
+                this.isElbowing = true;
+                this.elbowingFrames = 0;
+                playElbowSound();
+            }
+        };
+        
+        // 障碍物数组
+        let obstacles = [];
+        let obstacleTimer = 0;
+        
+        // 闪电旋风劈对象 - 需躲避
+        class Lightning {
+            constructor() {
+                this.x = canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.width = 40;
+                this.height = 91;
+                this.speed = gameSpeed + 1;
+                this.active = true;
+            }
+            
+            draw() {
+                if (obstacle1Img.complete && obstacle1Img.naturalWidth !== 0) {
+                    ctx.drawImage(obstacle1Img, this.x, this.y, this.width, this.height);
+                } else {
+                    ctx.save();
+                    ctx.translate(this.x, this.y);
+                    
+                    // 绘制闪电
+                    ctx.strokeStyle = '#FFFF00';
+                    ctx.lineWidth = 4;
+                    ctx.beginPath();
+                    ctx.moveTo(0, 0);
+                    ctx.lineTo(-15, 40);
+                    ctx.lineTo(10, 60);
+                    ctx.lineTo(-8, 90);
+                    ctx.lineTo(20, 120);
+                    ctx.lineTo(-5, 150);
+                    ctx.stroke();
+                    
+                    // 闪电发光效果
+                    ctx.strokeStyle = 'rgba(255, 255, 150, 0.7)';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(0, 0);
+                    ctx.lineTo(-15, 40);
+                    ctx.lineTo(10, 60);
+                    ctx.lineTo(-8, 90);
+                    ctx.lineTo(20, 120);
+                    ctx.lineTo(-5, 150);
+                    ctx.stroke();
+                    
+                    ctx.restore();
+                }
+            }
+            
+            update() {
+                this.x -= this.speed;
+                return this.x + this.width < 0;
+            }
+            
+checkCollision() {
+    const distX = Math.abs(this.x - player.x);
+    const distY = Math.abs(this.y - player.y);
+    
+    // 缩小碰撞检测范围
+    if (distX < 30 && distY < 60) {
+        playCrashSound();
+        gameOver();
+        return true;
+    }
+    return false;
+}
+        }
+        
+        // "ru2"弹幕对象 - 可被肘击击碎
+        class Ru2Bullet {
+            constructor(y) {
+                this.x = canvas.width;
+                this.y = y;
+                this.width = 91;
+                this.height = 45;
+                this.speed = gameSpeed;
+                this.text = "ru2";
+                this.active = true;
+            }
+            
+            draw() {
+                if (obstacle2Img.complete && obstacle2Img.naturalWidth !== 0) {
+                    ctx.drawImage(obstacle2Img, this.x, this.y, this.width, this.height);
+                } else {
+                    ctx.fillStyle = '#FF5555';
+                    ctx.font = 'bold 30px Arial';
+                    ctx.fillText(this.text, this.x, this.y);
+                    
+                    // 弹幕发光效果
+                    ctx.fillStyle = 'rgba(255, 100, 100, 0.6)';
+                    ctx.fillText(this.text, this.x + 2, this.y + 2);
+                }
+            }
+            
+            update() {
+                this.x -= this.speed;
+                return this.x + this.width < 0;
+            }
+            
+            // ru2碰撞检测 - 可被肘击击碎
+          checkCollision() {
+    const distX = Math.abs(this.x - player.x);
+    const distY = Math.abs(this.y - player.y);
+    
+    // 缩小碰撞检测范围
+    if (distX < 50 && distY < 20) {
+        if (player.isElbowing) {
+            score += 15;
+            createParticles(this.x + this.width/2, this.y + this.height/2);
+            return true;
+        } else {
+            playCrashSound();
+            gameOver();
+            return false;
+        }
+    }
+    return false;
+}
+        }
+        
+        // 粒子系统 - 用于特效
+        let particles = [];
+        
+        function createParticles(x, y) {
+            for (let i = 0; i < 15; i++) {
+                particles.push({
+                    x: x,
+                    y: y,
+                    size: Math.random() * 8 + 4,
+                    speedX: (Math.random() - 0.5) * 6,
+                    speedY: (Math.random() - 0.5) * 6,
+                    color: `hsl(${Math.random() * 60}, 100%, 50%)`,
+                    life: 30
+                });
+            }
+        }
+        
+        // 音效
+        function playElbowSound() {
+            if (elbowSound.readyState === HTMLMediaElement.HAVE_ENOUGH_DATA) {
+                elbowSound.currentTime = 0;
+                elbowSound.play().catch(e => {
+                    console.log("肘击音效播放失败:", e);
+                    playDefaultSound();
+                });
+            } else {
+                playDefaultSound();
+            }
+        }
+        
+        function playCrashSound() {
+            if (crashSound.readyState === HTMLMediaElement.HAVE_ENOUGH_DATA) {
+                crashSound.currentTime = 0;
+                crashSound.play().catch(e => {
+                    console.log("碰撞音效播放失败:", e);
+                });
+            }
+        }
+        
+        function playDefaultSound() {
+            const oscillator = ctx.createOscillator();
+            const gainNode = ctx.createGain();
+            
+            oscillator.type = 'sine';
+            oscillator.frequency.value = 180;
+            gainNode.gain.value = 0.1;
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(ctx.destination);
+            
+            oscillator.start();
+            gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+            oscillator.stop(ctx.currentTime + 0.4);
+        }
+        
+        // 游戏循环
+        function gameLoop() {
+            if (!gameRunning) return;
+            
+            // 清空画布
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 绘制背景
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            gradient.addColorStop(0, '#1a1a2e');
+            gradient.addColorStop(0.5, '#0f1529');
+            gradient.addColorStop(1, '#0a0e1e');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // 绘制星星
+            for (let i = 0; i < 100; i++) {
+                const alpha = Math.random() * 0.73 + 0.07;
+                const size = Math.random() * 2 + 1;
+                ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+                ctx.fillRect(
+                    Math.random() * canvas.width,
+                    Math.random() * canvas.height,
+                    size, size
+                );
+                
+                // 闪烁的星星
+                if (Math.random() > 0.95) {
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                    ctx.fillRect(
+                        Math.random() * canvas.width,
+                        Math.random() * canvas.height,
+                        size * 2, size * 2
+                    );
+                }
+            }
+            
+            // 更新和绘制玩家
+            player.update();
+            player.draw();
+            
+            // 生成障碍物
+            obstacleTimer++;
+            if (obstacleTimer > 80) {
+                // 闪电出现概率20%，ru2出现概率80%
+                if (Math.random() < 0.07) {
+                    obstacles.push(new Lightning());
+                } else {
+                    obstacles.push(new Ru2Bullet(Math.random() * canvas.height));
+                }
+                obstacleTimer = 0;
+                
+                // 随着分数增加，障碍物出现频率增加
+                if (score > 100) obstacleTimer = Math.max(0, 80 - Math.floor(score / 100));
+            }
+            
+            // 更新和绘制障碍物
+            for (let i = obstacles.length - 1; i >= 0; i--) {
+                const obstacle = obstacles[i];
+                
+                if (obstacle.update()) {
+                    obstacles.splice(i, 1);
+                    continue;
+                }
+                
+                obstacle.draw();
+                
+                // 检测碰撞
+                if (obstacle.checkCollision()) {
+                    obstacles.splice(i, 1);
+                    continue;
+                }
+            }
+            
+            // 更新和绘制粒子
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                
+                p.x += p.speedX;
+                p.y += p.speedY;
+                p.life--;
+                
+                if (p.life <= 0) {
+                    particles.splice(i, 1);
+                    continue;
+                }
+                
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // 更新分数
+            score++;
+            scoreElement.textContent = `分数: ${score}`;
+            
+            // 随着分数增加游戏速度
+            gameSpeed = 3 + Math.floor(score / 1000);
+            
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // 游戏结束
+        function gameOver() {
+            gameRunning = false;
+            finalScoreElement.textContent = score;
+            gameOverElement.style.display = 'block';
+        }
+        
+        // 重新开始游戏
+        function restartGame() {
+            gameRunning = true;
+            score = 0;
+            gameSpeed = 3;
+            obstacles = [];
+            particles = [];
+            player.y = canvas.height / 2;
+            player.speedY = 0;
+            gameOverElement.style.display = 'none';
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // 事件监听
+        window.addEventListener('keydown', function(e) {
+            if (!gameRunning && e.key === ' ') {
+                restartGame();
+                return;
+            }
+            
+            switch(e.key) {
+                case ' ':
+                    player.elbow();
+                    break;
+                case 'ArrowUp':
+                    upPressed = true;
+                    break;
+                case 'ArrowDown':
+                    downPressed = true;
+                    break;
+            }
+        });
+        
+        window.addEventListener('keyup', function(e) {
+            switch(e.key) {
+                case 'ArrowUp':
+                    upPressed = false;
+                    break;
+                case 'ArrowDown':
+                    downPressed = false;
+                    break;
+            }
+        });
+        
+        canvas.addEventListener('click', function() {
+            if (!gameRunning) {
+                restartGame();
+                return;
+            }
+            player.elbow();
+        });
+        
+        restartBtn.addEventListener('click', restartGame);
+        
+        // 虚拟按键事件
+        menuBtn.addEventListener('click', function() {
+            controlPanel.classList.toggle('active');
+        });
+        
+        upBtn.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            upPressed = true;
+        });
+        
+        upBtn.addEventListener('touchend', function(e) {
+            e.preventDefault();
+            upPressed = false;
+        });
+        
+        upBtn.addEventListener('mousedown', function() {
+            upPressed = true;
+        });
+        
+        upBtn.addEventListener('mouseup', function() {
+            upPressed = false;
+        });
+        
+        downBtn.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            downPressed = true;
+        });
+        
+        downBtn.addEventListener('touchend', function(e) {
+            e.preventDefault();
+            downPressed = false;
+        });
+        
+        downBtn.addEventListener('mousedown', function() {
+            downPressed = true;
+        });
+        
+        downBtn.addEventListener('mouseup', function() {
+            downPressed = false;
+        });
+        
+        spaceBtn.addEventListener('click', function() {
+            player.elbow();
+        });
+        
+        // 窗口大小调整
+        window.addEventListener('resize', function() {
+            resizeCanvas();
+        });
+        
+        // 初始加载
+        resizeCanvas();
+    </script>
+</body>
+</html>
