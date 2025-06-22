@@ -6,17 +6,45 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>拳皇</title>
     <link rel="stylesheet" href="base.css">
-    <!-- 将 jQuery 移动到模块下方 -->
 </head>
 
 <body>
     <div id="kof"></div>
     
-    <!-- 使用绝对路径加载 jQuery -->
+    <!-- 触控界面 -->
+    <div id="mobile-controls">
+        <!-- 左侧控制区 -->
+        <div class="left-controls">
+            <div class="d-pad">
+                <div class="d-pad-top" data-key="w"></div>
+                <div class="d-pad-bottom" data-key="s"></div>
+                <div class="d-pad-left" data-key="a"></div>
+                <div class="d-pad-right" data-key="d"></div>
+                <div class="d-pad-center"></div>
+            </div>
+            <div class="attack-btn" data-key=" ">空格</div>
+        </div>
+        
+        <!-- 右侧控制区 -->
+        <div class="right-controls">
+            <div class="arrow-pad">
+                <div class="arrow-up" data-key="ArrowUp"></div>
+                <div class="arrow-down" data-key="ArrowDown"></div>
+                <div class="arrow-left" data-key="ArrowLeft"></div>
+                <div class="arrow-right" data-key="ArrowRight"></div>
+                <div class="arrow-center"></div>
+            </div>
+            <div class="attack-btn" data-key="Enter">Enter</div>
+        </div>
+    </div>
+    
+    <!-- 触控切换按钮 - 始终显示 -->
+    <div id="mobile-toggle">触控</div>
+    
     <script src="jquery-3.3.1.min.js"></script>
     
     <script type="module">
-        import {KOF} from './ba.js';  // 确保路径正确
+        import {KOF} from './ba.js';
         
         document.addEventListener("DOMContentLoaded", () => {
             let kof = new KOF('kof');
