@@ -1,0 +1,1665 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>林强作弊！终极版</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+            color: #fff;
+        }
+        
+        .game-container {
+            width: 100%;
+            max-width: 1200px;
+            background: rgba(0, 0, 0, 0.85);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .header {
+            background: #2c3e50;
+            padding: 15px;
+            text-align: center;
+            border-bottom: 3px solid #e74c3c;
+            position: relative;
+        }
+        
+        .header h1 {
+            font-size: 36px;
+            color: #ffcc00;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            letter-spacing: 1px;
+        }
+        
+        .screen {
+            display: none;
+            padding: 20px;
+            min-height: 600px;
+        }
+        
+        .screen.active {
+            display: block;
+        }
+        
+        /* 加载层 */
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 1000;
+        }
+        
+        .loading-spinner {
+            width: 80px;
+            height: 80px;
+            border: 8px solid rgba(231, 76, 60, 0.3);
+            border-top: 8px solid #e74c3c;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        .loading-text {
+            font-size: 24px;
+            color: #fff;
+            text-align: center;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* 开始界面 */
+        .start-screen {
+            text-align: center;
+            padding: 30px;
+        }
+        
+        .role-selection {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 50px;
+            margin: 40px 0;
+        }
+        
+        .role-card {
+            width: 320px;
+            background: rgba(44, 62, 80, 0.8);
+            border-radius: 12px;
+            padding: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+        }
+        
+        .role-card:hover {
+            transform: translateY(-10px);
+            border-color: #e74c3c;
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.5);
+        }
+        
+        .role-card h2 {
+            color: #f39c12;
+            margin-bottom: 15px;
+            font-size: 26px;
+        }
+        
+        .role-card p {
+            color: #ecf0f1;
+            margin-bottom: 20px;
+            line-height: 1.6;
+            font-size: 16px;
+        }
+        
+        .role-icon {
+            font-size: 70px;
+            margin-bottom: 20px;
+            color: #3498db;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .btn {
+            padding: 14px 32px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 0 #c0392b;
+            margin: 12px;
+            min-width: 180px;
+        }
+        
+        .btn:hover {
+            background: #c0392b;
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #c0392b;
+        }
+        
+        .btn:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+        
+        .btn-teacher {
+            background: #f39c12;
+            box-shadow: 0 4px 0 #d35400;
+        }
+        
+        .btn-teacher:hover {
+            background: #d35400;
+            box-shadow: 0 2px 0 #d35400;
+        }
+        
+        .btn-student {
+            background: #3498db;
+            box-shadow: 0 4px 0 #2980b9;
+        }
+        
+        .btn-student:hover {
+            background: #2980b9;
+            box-shadow: 0 2px 0 #2980b9;
+        }
+        
+        /* 游戏界面 */
+        .classroom {
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%236e5b4b"/><rect x="10" y="10" width="80" height="5" fill="%234f3d32"/><rect x="10" y="25" width="80" height="5" fill="%234f3d32"/><rect x="10" y="40" width="80" height="5" fill="%234f3d32"/><rect x="10" y="55" width="80" height="5" fill="%234f3d32"/><rect x="10" y="70" width="80" height="5" fill="%234f3d32"/><rect x="10" y="85" width="80" height="5" fill="%234f3d32"/></svg>');
+            height: 450px;
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 25px;
+            border: 3px solid #5d4037;
+        }
+        
+        .desk {
+            position: absolute;
+            width: 100px;
+            height: 60px;
+            background: #5d4037;
+            border: 2px solid #3e2723;
+            border-radius: 6px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .student {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: transform 0.3s;
+            z-index: 2;
+        }
+        
+        .student-body {
+            width: 60px;
+            height: 80px;
+            border-radius: 5px 5px 0 0;
+            position: relative;
+        }
+        
+        .student-head {
+            width: 50px;
+            height: 50px;
+            background: #ffccbc;
+            border-radius: 50%;
+            border: 2px solid #bf360c;
+            margin-bottom: -25px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            z-index: 3;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+        }
+        
+        .student-head img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        /* 迪克样式 - 抽象CSS绘制 */
+        .dick {
+            position: absolute;
+            width: 0;
+            height: 6px;
+            background: linear-gradient(to right, #ffccbc, #ffab91);
+            border-radius: 10px;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            transition: all 0.5s;
+            z-index: 1;
+        }
+        
+        .dick-head {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: #ff8a65;
+            border-radius: 50%;
+            top: -3px;
+            right: 0;
+            display: none;
+        }
+        
+        .truck {
+            position: absolute;
+            width: 0;
+            height: 80px;
+            background: #e74c3c;
+            top: 50px;
+            left: -200px;
+            border-radius: 10px 0 0 10px;
+            display: flex;
+            align-items: center;
+            z-index: 10;
+            transition: transform 0.5s;
+        }
+        
+        .truck-cabin {
+            width: 50px;
+            height: 40px;
+            background: #c0392b;
+            border-radius: 10px 0 0 10px;
+        }
+        
+        .truck-container {
+            width: 100px;
+            height: 50px;
+            background: #e74c3c;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+            font-size: 24px;
+        }
+        
+        .truck-wheels {
+            display: flex;
+            position: absolute;
+            bottom: -10px;
+            width: 100%;
+            padding: 0 10px;
+            justify-content: space-between;
+        }
+        
+        .wheel {
+            width: 25px;
+            height: 25px;
+            background: #2c3e50;
+            border-radius: 50%;
+            border: 3px solid #7f8c8d;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .message {
+            text-align: center;
+            padding: 18px;
+            font-size: 22px;
+            min-height: 70px;
+            background: rgba(44, 62, 80, 0.7);
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .blood {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: #e74c3c;
+            border-radius: 50%;
+            display: none;
+            z-index: 5;
+        }
+        
+        .instructions {
+            background: rgba(44, 62, 80, 0.7);
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+            font-size: 16px;
+            line-height: 1.6;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .instructions h3 {
+            color: #f39c12;
+            margin-bottom: 15px;
+            text-align: center;
+            font-size: 22px;
+        }
+        
+        /* 学生模式界面 */
+        .student-screen {
+            text-align: center;
+        }
+        
+        .test-container {
+            background: rgba(44, 62, 80, 0.7);
+            padding: 25px;
+            border-radius: 12px;
+            margin: 25px auto;
+            max-width: 800px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+        }
+        
+        .question {
+            font-size: 20px;
+            margin-bottom: 25px;
+            text-align: left;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 10px;
+            line-height: 1.5;
+        }
+        
+        .options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .option {
+            background: #3498db;
+            padding: 18px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+            font-size: 18px;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+        }
+        
+        .option:hover {
+            background: #2980b9;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        .option.correct {
+            background: #2ecc71;
+        }
+        
+        .option.incorrect {
+            background: #e74c3c;
+        }
+        
+        .cheat-btn {
+            background: #f39c12;
+            margin-top: 25px;
+            font-size: 20px;
+            padding: 16px 35px;
+        }
+        
+        /* 肘击小游戏界面 */
+        .cheat-game-container {
+            display: none;
+            background: rgba(44, 62, 80, 0.7);
+            padding: 25px;
+            border-radius: 12px;
+            margin: 25px auto;
+            max-width: 900px;
+            position: relative;
+            height: 550px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+        }
+        
+        .cheat-game {
+            position: relative;
+            width: 100%;
+            height: 450px;
+            background: #6e5b4b;
+            border: 3px solid #5d4037;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        
+        .elbow-target {
+            width: 300px;
+            height: 300px;
+            background: #e74c3c;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            transition: all 0.1s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .elbow-target:active {
+            transform: scale(0.95);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .elbow-target .target-text {
+            font-size: 32px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        .elbow-target .hit-effect {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 70%);
+            border-radius: 50%;
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .elbow-stats {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            margin-top: 20px;
+            font-size: 24px;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .elbow-stats div {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px 20px;
+            border-radius: 10px;
+            min-width: 180px;
+        }
+        
+        .elbow-stats span {
+            color: #f39c12;
+            font-size: 28px;
+        }
+        
+        .teacher-warning {
+            position: absolute;
+            top: 20px;
+            width: 100%;
+            text-align: center;
+            font-size: 22px;
+            color: #ffcc00;
+            font-weight: bold;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            display: none;
+        }
+        
+        /* 监考老师 */
+        .teacher {
+            position: absolute;
+            width: 35px;
+            height: 55px;
+            background: #e74c3c;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 6px;
+            z-index: 8;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .teacher-head {
+            position: absolute;
+            width: 32px;
+            height: 32px;
+            background: #ffccbc;
+            border-radius: 50%;
+            top: -15px;
+            left: 1.5px;
+        }
+        
+        .teacher::after {
+            content: "监考老师";
+            position: absolute;
+            bottom: -30px;
+            color: white;
+            font-size: 14px;
+            width: 100%;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        /* 学生位置 */
+        .student-1 { bottom: 160px; left: 100px; }
+        .student-2 { bottom: 160px; left: 200px; }
+        .student-3 { bottom: 160px; left: 300px; }
+        .student-4 { bottom: 160px; left: 400px; }
+        .student-5 { bottom: 160px; left: 500px; }
+        .student-6 { bottom: 160px; left: 600px; }
+        .student-7 { bottom: 160px; left: 700px; }
+        .student-8 { bottom: 160px; right: 100px; }
+        
+        .desk-1 { bottom: 100px; left: 100px; }
+        .desk-2 { bottom: 100px; left: 200px; }
+        .desk-3 { bottom: 100px; left: 300px; }
+        .desk-4 { bottom: 100px; left: 400px; }
+        .desk-5 { bottom: 100px; left: 500px; }
+        .desk-6 { bottom: 100px; left: 600px; }
+        .desk-7 { bottom: 100px; left: 700px; }
+        .desk-8 { bottom: 100px; right: 100px; }
+        
+        /* 放电特效 */
+        .lightning {
+            position: absolute;
+            width: 5px;
+            height: 0;
+            background: #00f7ff;
+            display: none;
+            z-index: 15;
+            box-shadow: 0 0 10px #00f7ff;
+        }
+        
+        /* 动画效果 */
+        @keyframes vibrate {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-4px); }
+            50% { transform: translateX(0); }
+            75% { transform: translateX(4px); }
+            100% { transform: translateX(0); }
+        }
+        
+        .vibrate {
+            animation: vibrate 0.1s infinite;
+        }
+        
+        @keyframes electric {
+            0% { box-shadow: 0 0 5px #00f7ff; }
+            50% { box-shadow: 0 0 20px #00f7ff, 0 0 30px #00f7ff; }
+            100% { box-shadow: 0 0 5px #00f7ff; }
+        }
+        
+        .electric {
+            animation: electric 0.5s infinite;
+        }
+        
+        .name-tag {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 14px;
+            white-space: nowrap;
+            z-index: 4;
+            font-weight: bold;
+        }
+        
+        /* 击中效果动画 */
+        @keyframes hitEffect {
+            0% { transform: scale(0); opacity: 0.8; }
+            100% { transform: scale(2); opacity: 0; }
+        }
+        
+        .hit-animation {
+            animation: hitEffect 0.3s forwards;
+        }
+        
+        /* 电击效果 */
+        .electrocute-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(0, 247, 255, 0.5) 0%, rgba(0, 0, 0, 0) 70%);
+            display: none;
+            pointer-events: none;
+            z-index: 20;
+        }
+        
+        /* 头像样式 */
+        .character-head {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+        
+        /* 游戏状态指示器 */
+        .status-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        .status-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 8px 15px;
+            border-radius: 10px;
+        }
+        
+        .status-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffcc00;
+        }
+        
+        .status-label {
+            font-size: 14px;
+            color: #ecf0f1;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <!-- 加载层 -->
+        <div class="loading-overlay" id="loadingOverlay">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">加载游戏中... 请稍候</div>
+        </div>
+        
+        <div class="header">
+            <h1>林强作弊！终极挑战</h1>
+        </div>
+        
+        <!-- 开始界面 -->
+        <div class="screen start-screen active" id="startScreen">
+            <div class="role-selection">
+                <div class="role-card" id="teacherRole">
+                    <div class="role-icon">👨‍🏫</div>
+                    <h2>扮演监考老师</h2>
+                    <p>作为监考老师，你的职责是维护考场纪律。当发现林强作弊时，召唤卡车碾压他的迪克！</p>
+                    <button class="btn btn-teacher">选择老师角色</button>
+                </div>
+                
+                <div class="role-card" id="studentRole">
+                    <div class="role-icon">👨‍🎓</div>
+                    <h2>扮演林强</h2>
+                    <p>作为考生林强，你需要完成期末考试。如果不会答题，可以尝试肘击柯基以传递纸条！</p>
+                    <button class="btn btn-student">选择学生角色</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 老师模式 -->
+        <div class="screen" id="teacherScreen">
+            <div class="message" id="teacherMessage">
+                期末考正在进行中... 注意观察林强行为！
+            </div>
+            
+            <div class="classroom" id="classroom">
+                <!-- 课桌 -->
+                <div class="desk desk-1"></div>
+                <div class="desk desk-2"></div>
+                <div class="desk desk-3"></div>
+                <div class="desk desk-4"></div>
+                <div class="desk desk-5"></div>
+                <div class="desk desk-6"></div>
+                <div class="desk desk-7"></div>
+                <div class="desk desk-8"></div>
+                
+                <!-- 监考老师 -->
+                <div class="teacher" id="classTeacher">
+                    <div class="teacher-head"></div>
+                </div>
+                
+                <!-- 考生1：林强 -->
+                <div class="student student-1" id="linqiang">
+                    <div class="student-head">
+                        <img src="林强smallhead.png" alt="林强" class="character-head">
+                    </div>
+                    <div class="student-body" style="background:#3498db;">
+                        <div class="dick" id="dick">
+                            <div class="dick-head"></div>
+                        </div>
+                    </div>
+                    <div class="name-tag">林强</div>
+                </div>
+                
+                <!-- 考生2 -->
+                <div class="student student-2">
+                    <div class="student-head">
+                        <div style="width:100%;height:100%;background:#b3e0ff;border-radius:50%;display:flex;justify-content:center;align-items:center;font-size:12px;font-weight:bold;">小明</div>
+                    </div>
+                    <div class="student-body" style="background:#2ecc71;"></div>
+                    <div class="name-tag">小明</div>
+                </div>
+                
+                <!-- 考生3 -->
+                <div class="student student-3">
+                    <div class="student-head">
+                        <div style="width:100%;height:100%;background:#ffccff;border-radius:50%;display:flex;justify-content:center;align-items:center;font-size:12px;font-weight:bold;">小红</div>
+                    </div>
+                    <div class="student-body" style="background:#9b59b6;"></div>
+                    <div class="name-tag">小红</div>
+                </div>
+                
+                <!-- 考生4：KSY -->
+                <div class="student student-4">
+                    <div class="student-head">
+                        <img src="kj.png" alt="柯基" class="character-head">
+                    </div>
+                    <div class="student-body" style="background:#e74c3c;"></div>
+                    <div class="name-tag">柯基</div>
+                </div>
+                
+                <!-- 考生5 -->
+                <div class="student student-5">
+                    <div class="student-head">
+                        <div style="width:100%;height:100%;background:#c2f0c2;border-radius:50%;display:flex;justify-content:center;align-items:center;font-size:12px;font-weight:bold;">小刚</div>
+                    </div>
+                    <div class="student-body" style="background:#f39c12;"></div>
+                    <div class="name-tag">小刚</div>
+                </div>
+                
+                <!-- 考生6 -->
+                <div class="student student-6">
+                    <div class="student-head">
+                        <div style="width:100%;height:100%;background:#ffb3b3;border-radius:50%;display:flex;justify-content:center;align-items:center;font-size:12px;font-weight:bold;">小丽</div>
+                    </div>
+                    <div class="student-body" style="background:#1abc9c;"></div>
+                    <div class="name-tag">小丽</div>
+                </div>
+                
+                <!-- 考生7 -->
+                <div class="student student-7">
+                    <div class="student-head">
+                        <div style="width:100%;height:100%;background:#c2c2f0;border-radius:50%;display:flex;justify-content:center;align-items:center;font-size:12px;font-weight:bold;">小华</div>
+                    </div>
+                    <div class="student-body" style="background:#8e44ad;"></div>
+                    <div class="name-tag">小华</div>
+                </div>
+                
+                <!-- 考生8 -->
+                <div class="student student-8">
+                    <div class="student-head">
+                        <div style="width:100%;height:100%;background:#f0e6c2;border-radius:50%;display:flex;justify-content:center;align-items:center;font-size:12px;font-weight:bold;">小芳</div>
+                    </div>
+                    <div class="student-body" style="background:#16a085;"></div>
+                    <div class="name-tag">小芳</div>
+                </div>
+                
+                <!-- 卡车 -->
+                <div class="truck" id="truck">
+                    <div class="truck-cabin"></div>
+                    <div class="truck-container">卡车</div>
+                    <div class="truck-wheels">
+                        <div class="wheel"></div>
+                        <div class="wheel"></div>
+                        <div class="wheel"></div>
+                    </div>
+                </div>
+                
+                <!-- 血液效果 -->
+                <div class="blood" id="blood1"></div>
+                <div class="blood" id="blood2"></div>
+                <div class="blood" id="blood3"></div>
+                
+                <!-- 放电效果 -->
+                <div class="lightning" id="lightning1"></div>
+                <div class="lightning" id="lightning2"></div>
+                <div class="lightning" id="lightning3"></div>
+                
+                <!-- 电击覆盖层 -->
+                <div class="electrocute-overlay" id="electrocuteOverlay"></div>
+            </div>
+            
+            <div class="controls">
+                <button class="btn" id="startCheatBtn">开始监控</button>
+                <button class="btn btn-teacher" id="truckBtn">召唤卡车！</button>
+                <button class="btn" id="backBtn">返回主菜单</button>
+            </div>
+            
+            <div class="instructions">
+                <h3>监考老师模式说明</h3>
+                <p>林强被抓3次作弊将被卡车处决！林强成功作弊3次将用迪克电死监考老师！</p>
+                <div class="status-indicator">
+                    <div class="status-item">
+                        <div class="status-value" id="successCount">0</div>
+                        <div class="status-label">作弊成功</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-value" id="failCount">0</div>
+                        <div class="status-label">被抓次数</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 学生模式 -->
+        <div class="screen" id="studentScreen">
+            <div class="message" id="studentMessage">
+                期末考试 - 请认真作弊
+            </div>
+            
+            <div class="test-container" id="testContainer">
+                <div class="question" id="question">
+                    题目加载中...
+                </div>
+                
+                <div class="options" id="options">
+                    <div class="option" data-option="A">A. </div>
+                    <div class="option" data-option="B">B. </div>
+                    <div class="option" data-option="C">C. </div>
+                    <div class="option" data-option="D">D. </div>
+                </div>
+                
+                <div class="message" id="answerResult"></div>
+                
+                <button class="btn" id="nextQuestionBtn">下一题</button>
+                <button class="btn cheat-btn" id="cheatBtn">作弊传纸条</button>
+                <button class="btn" id="backBtn2">返回主菜单</button>
+            </div>
+            
+            <!-- 肘击小游戏 -->
+            <div class="cheat-game-container" id="cheatGameContainer">
+                <div class="message" id="cheatMessage">
+                    快速肘击林强！1秒内点击15次传递纸条！
+                </div>
+                
+                <div class="cheat-game" id="cheatGame">
+                    <div class="teacher-warning" id="teacherWarning">监考老师发现了！</div>
+                    <div class="elbow-target" id="elbowTarget">
+                        <div class="target-text">肘击林强</div>
+                        <div class="hit-effect" id="hitEffect"></div>
+                    </div>
+                    <div class="elbow-stats">
+                        <div>点击次数: <span id="clickCount">0</span></div>
+                        <div>目标: <span id="targetCount">15</span> 次</div>
+                        <div>剩余时间: <span id="timeLeft">1.0</span> 秒</div>
+                    </div>
+                </div>
+                
+                <div class="controls">
+                    <button class="btn" id="retryBtn">再试一次</button>
+                    <button class="btn" id="cancelCheatBtn">取消作弊</button>
+                </div>
+            </div>
+            
+            <div class="instructions">
+                <h3>学生模式说明</h3>
+                <p>快速点击林强身体传递纸条！1秒内点击15次才能成功！</p>
+                <div class="status-indicator">
+                    <div class="status-item">
+                        <div class="status-value" id="scoreValue">0</div>
+                        <div class="status-label">当前得分</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-value" id="questionCount">1/5</div>
+                        <div class="status-label">题目进度</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 显示加载层
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            
+            // 模拟加载过程
+            setTimeout(() => {
+                loadingOverlay.style.display = 'none';
+            }, 2000);
+            
+            // 屏幕元素
+            const startScreen = document.getElementById('startScreen');
+            const teacherScreen = document.getElementById('teacherScreen');
+            const studentScreen = document.getElementById('studentScreen');
+            const cheatGameContainer = document.getElementById('cheatGameContainer');
+            const testContainer = document.getElementById('testContainer');
+            
+            // 按钮
+            const teacherRoleBtn = document.querySelector('#teacherRole .btn');
+            const studentRoleBtn = document.querySelector('#studentRole .btn');
+            const backBtn = document.getElementById('backBtn');
+            const backBtn2 = document.getElementById('backBtn2');
+            const cheatBtn = document.getElementById('cheatBtn');
+            
+            // 切换到老师模式
+            teacherRoleBtn.addEventListener('click', function() {
+                startScreen.classList.remove('active');
+                teacherScreen.classList.add('active');
+            });
+            
+            // 切换到学生模式
+            studentRoleBtn.addEventListener('click', function() {
+                startScreen.classList.remove('active');
+                studentScreen.classList.add('active');
+                startTest();
+            });
+            
+            // 返回主菜单
+            backBtn.addEventListener('click', function() {
+                teacherScreen.classList.remove('active');
+                startScreen.classList.add('active');
+                resetTeacherGame();
+            });
+            
+            backBtn2.addEventListener('click', function() {
+                studentScreen.classList.remove('active');
+                startScreen.classList.add('active');
+            });
+            
+            // 高考英语难题库
+            const englishQuestions = [
+                {
+                    question: "The novel, ______ is set in 19th-century London, explores themes of social inequality and human resilience. What makes it particularly compelling is the author's use of multiple narrative perspectives, ______ allows readers to experience events from different viewpoints.",
+                    options: {
+                        A: "that; which",
+                        B: "which; that",
+                        C: "which; which",
+                        D: "that; that"
+                    },
+                    answer: "C",
+                    explanation: "fvv。"
+                },
+                {
+                    question: "Had the government taken preventive measures earlier, the economic crisis ______ avoided. However, the prevailing sentiment at the time was that such measures ______ unnecessary, a miscalculation that proved costly.",
+                    options: {
+                        A: "could be; were",
+                        B: "could have been; were",
+                        C: "might be; would be",
+                        D: "should have been; had been"
+                    },
+                    answer: "B",
+                    explanation: "dick。"
+                },
+                {
+                    question: "Not until ______ the complex algorithm ______ appreciate the elegance of its design. It was then that I realized how years of research ______ into this breakthrough.",
+                    options: {
+                        A: "had I implemented; did I; had gone",
+                        B: "I implemented; I did; went",
+                        C: "did I implement; I did; had gone",
+                        D: "I had implemented; did I; had gone"
+                    },
+                    answer: "D",
+                    explanation: "penis。"
+                },
+                {
+                    question: "The symposium, ______ attendees from over thirty countries, ______ considerable media attention despite its organizer's initial apprehension ______ it might be overshadowed by concurrent events.",
+                    options: {
+                        A: "drawing; attracted; that",
+                        B: "drawn; attracting; which",
+                        C: "having drawn; attracted; that",
+                        D: "to draw; attracting; which"
+                    },
+                    answer: "A",
+                    explanation: "jiba。"
+                },
+                {
+                    question: "______ the controversial legislation passed by a narrow margin, its implementation ______ delayed pending judicial review. Many legal experts contend that such reviews ______ essential for maintaining constitutional integrity.",
+                    options: {
+                        A: "Despite; has been; are",
+                        B: "Although; was; is",
+                        C: "While; had been; was",
+                        D: "Whereas; has been; is"
+                    },
+                    answer: "A",
+                    explanation: "Dajiba。"
+                }
+            ];
+            
+            // 学生模式变量
+            let currentQuestionIndex = 0;
+            let score = 0;
+            let testFinished = false;
+            
+            // 开始测试
+            function startTest() {
+                currentQuestionIndex = 0;
+                score = 0;
+                testFinished = false;
+                document.getElementById('nextQuestionBtn').style.display = 'block';
+                document.getElementById('cheatBtn').style.display = 'block';
+                document.getElementById('answerResult').textContent = '';
+                document.getElementById('scoreValue').textContent = score;
+                document.getElementById('questionCount').textContent = "1/5";
+                cheatGameContainer.style.display = 'none';
+                testContainer.style.display = 'block';
+                loadQuestion();
+            }
+            
+            // 加载题目
+            function loadQuestion() {
+                const question = englishQuestions[currentQuestionIndex];
+                document.getElementById('question').textContent = `题目 ${currentQuestionIndex + 1}: ${question.question}`;
+                
+                const optionsContainer = document.getElementById('options');
+                optionsContainer.innerHTML = '';
+                
+                for (const [key, value] of Object.entries(question.options)) {
+                    const optionElement = document.createElement('div');
+                    optionElement.className = 'option';
+                    optionElement.dataset.option = key;
+                    optionElement.textContent = `${key}. ${value}`;
+                    optionElement.addEventListener('click', selectOption);
+                    optionsContainer.appendChild(optionElement);
+                }
+                
+                document.getElementById('studentMessage').textContent = `帮助迪克林强作弊 ${currentQuestionIndex + 1}/5`;
+                document.getElementById('questionCount').textContent = `${currentQuestionIndex + 1}/5`;
+            }
+            
+            // 选择答案
+            function selectOption(e) {
+                if (testFinished) return;
+                
+                const selectedOption = e.target.dataset.option;
+                const correctAnswer = englishQuestions[currentQuestionIndex].answer;
+                const explanation = englishQuestions[currentQuestionIndex].explanation;
+                
+                // 移除之前的选择
+                document.querySelectorAll('.option').forEach(opt => {
+                    opt.classList.remove('correct', 'incorrect');
+                });
+                
+                // 显示结果
+                if (selectedOption === correctAnswer) {
+                    e.target.classList.add('correct');
+                    document.getElementById('answerResult').innerHTML = "回答正确！<br>" + explanation;
+                    document.getElementById('answerResult').style.color = "#2ecc71";
+                    score++;
+                    document.getElementById('scoreValue').textContent = score;
+                } else {
+                    e.target.classList.add('incorrect');
+                    // 显示正确答案
+                    document.querySelector(`.option[data-option="${correctAnswer}"]`).classList.add('correct');
+                    document.getElementById('answerResult').innerHTML = `回答错误！正确答案是: ${correctAnswer}<br>${explanation}`;
+                    document.getElementById('answerResult').style.color = "#e74c3c";
+                }
+                
+                // 禁用选项
+                document.querySelectorAll('.option').forEach(opt => {
+                    opt.style.pointerEvents = 'none';
+                });
+                
+                testFinished = true;
+            }
+            
+            // 下一题
+            document.getElementById('nextQuestionBtn').addEventListener('click', function() {
+                if (!testFinished) return;
+                
+                currentQuestionIndex++;
+                
+                if (currentQuestionIndex < 5) {
+                    testFinished = false;
+                    document.querySelectorAll('.option').forEach(opt => {
+                        opt.style.pointerEvents = 'auto';
+                        opt.classList.remove('correct', 'incorrect');
+                    });
+                    document.getElementById('answerResult').textContent = '';
+                    loadQuestion();
+                } else {
+                    // 考试结束
+                    document.getElementById('question').textContent = "考试结束！";
+                    document.getElementById('options').innerHTML = '';
+                    document.getElementById('nextQuestionBtn').style.display = 'none';
+                    document.getElementById('cheatBtn').style.display = 'none';
+                    document.getElementById('studentMessage').textContent = `考试结束！你的得分: ${score}/5`;
+                    
+                    if (score >= 3) {
+                        document.getElementById('answerResult').textContent = "恭喜你抄爽了！";
+                        document.getElementById('answerResult').style.color = "#2ecc71";
+                    } else {
+                        document.getElementById('answerResult').textContent = "很遗憾，你没抄爽。";
+                        document.getElementById('answerResult').style.color = "#e74c3c";
+                    }
+                }
+            });
+            
+            // 作弊按钮 - 显示肘击小游戏
+            cheatBtn.addEventListener('click', function() {
+                testContainer.style.display = 'none';
+                cheatGameContainer.style.display = 'block';
+                startCheatGame();
+            });
+            
+            // 肘击小游戏变量
+            let clickCount = 0;
+            let timeLeft = 1.0; // 1秒时间限制
+            let timer = null;
+            let gameActive = false;
+            let cheatSuccess = false;
+            let teacherWarningVisible = false;
+            let requiredClicks = 15; // 1秒内需要点击15次
+            
+            // 开始肘击小游戏
+            function startCheatGame() {
+                // 重置游戏状态
+                clickCount = 0;
+                timeLeft = 1.0;
+                gameActive = true;
+                cheatSuccess = false;
+                teacherWarningVisible = false;
+                
+                document.getElementById('clickCount').textContent = clickCount;
+                document.getElementById('timeLeft').textContent = timeLeft.toFixed(1);
+                document.getElementById('targetCount').textContent = requiredClicks;
+                document.getElementById('cheatMessage').textContent = "快速肘击林强！1秒内点击15次传递纸条！";
+                document.getElementById('teacherWarning').style.display = 'none';
+                
+                // 添加点击事件
+                const elbowTarget = document.getElementById('elbowTarget');
+                elbowTarget.addEventListener('click', handleElbowClick);
+                
+                // 开始计时
+                timer = setInterval(updateGame, 100);
+            }
+            
+            // 处理肘击点击
+            function handleElbowClick() {
+                if (!gameActive) return;
+                
+                clickCount++;
+                document.getElementById('clickCount').textContent = clickCount;
+                
+                // 显示击中效果
+                const hitEffect = document.getElementById('hitEffect');
+                hitEffect.style.opacity = '0.8';
+                hitEffect.classList.remove('hit-animation');
+                void hitEffect.offsetWidth; // 触发重绘
+                hitEffect.classList.add('hit-animation');
+                
+                // 随机显示老师警告
+                if (!teacherWarningVisible && Math.random() > 0.7) {
+                    showTeacherWarning();
+                }
+            }
+            
+            // 显示老师警告
+            function showTeacherWarning() {
+                teacherWarningVisible = true;
+                const warning = document.getElementById('teacherWarning');
+                warning.style.display = 'block';
+                warning.style.opacity = '1';
+                
+                setTimeout(() => {
+                    warning.style.opacity = '0';
+                    setTimeout(() => {
+                        teacherWarningVisible = false;
+                    }, 1000);
+                }, 1000);
+            }
+            
+            // 更新游戏状态
+            function updateGame() {
+                if (!gameActive) return;
+                
+                timeLeft -= 0.1;
+                document.getElementById('timeLeft').textContent = timeLeft.toFixed(1);
+                
+                // 检查是否超时
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    gameActive = false;
+                    
+                    if (clickCount >= requiredClicks) {
+                        // 作弊成功
+                        document.getElementById('cheatMessage').textContent = "成功！纸条已传给柯基！";
+                        cheatSuccess = true;
+                        setTimeout(endCheatGame, 1500);
+                    } else {
+                        // 作弊失败
+                        document.getElementById('cheatMessage').textContent = "肘击次数不足！被监考老师发现了！";
+                        setTimeout(() => {
+                            document.getElementById('cheatMessage').textContent += " 召唤卡车中...";
+                            setTimeout(endCheatGame, 1500);
+                        }, 1000);
+                    }
+                }
+            }
+            
+            // 结束肘击小游戏
+            function endCheatGame() {
+                // 移除点击事件
+                const elbowTarget = document.getElementById('elbowTarget');
+                elbowTarget.removeEventListener('click', handleElbowClick);
+                
+                if (cheatSuccess) {
+                    // 作弊成功，获得答案
+                    const correctAnswer = englishQuestions[currentQuestionIndex].answer;
+                    document.querySelector(`.option[data-option="${correctAnswer}"]`).classList.add('correct');
+                    document.getElementById('answerResult').innerHTML = "作弊成功！你收到了柯基的答案。<br>" + englishQuestions[currentQuestionIndex].explanation;
+                    document.getElementById('answerResult').style.color = "#f39c12";
+                    score++;
+                    document.getElementById('scoreValue').textContent = score;
+                }
+                
+                // 回到测试界面
+                cheatGameContainer.style.display = 'none';
+                testContainer.style.display = 'block';
+                
+                // 禁用选项
+                document.querySelectorAll('.option').forEach(opt => {
+                    opt.style.pointerEvents = 'none';
+                });
+                
+                testFinished = true;
+            }
+            
+            // 再试一次按钮
+            document.getElementById('retryBtn').addEventListener('click', function() {
+                clearInterval(timer);
+                startCheatGame();
+            });
+            
+            // 取消作弊按钮
+            document.getElementById('cancelCheatBtn').addEventListener('click', function() {
+                clearInterval(timer);
+                cheatGameContainer.style.display = 'none';
+                testContainer.style.display = 'block';
+            });
+            
+            // 老师模式游戏逻辑
+            const startCheatBtn = document.getElementById('startCheatBtn');
+            const truckBtn = document.getElementById('truckBtn');
+            const message = document.getElementById('teacherMessage');
+            const dick = document.getElementById('dick');
+            const dickHead = dick.querySelector('.dick-head');
+            const truck = document.getElementById('truck');
+            const linqiang = document.getElementById('linqiang');
+            const blood1 = document.getElementById('blood1');
+            const blood2 = document.getElementById('blood2');
+            const blood3 = document.getElementById('blood3');
+            const lightning1 = document.getElementById('lightning1');
+            const lightning2 = document.getElementById('lightning2');
+            const lightning3 = document.getElementById('lightning3');
+            const electrocuteOverlay = document.getElementById('electrocuteOverlay');
+            const classTeacher = document.getElementById('classTeacher');
+            
+            // 老师游戏状态
+            let teacherGameActive = false;
+            let cheatingInProgress = false;
+            let cheatSuccessCount = 0;
+            let cheatFailCount = 0;
+            
+            // 更新作弊次数显示
+            function updateCheatCount() {
+                document.getElementById('successCount').textContent = cheatSuccessCount;
+                document.getElementById('failCount').textContent = cheatFailCount;
+            }
+            
+            // 开始监控
+            startCheatBtn.addEventListener('click', function() {
+                if (teacherGameActive) return;
+                
+                teacherGameActive = true;
+                message.textContent = "监控中... 注意林强的行为！";
+                startCheatBtn.disabled = true;
+                
+                // 更频繁地开始作弊（1秒内）
+                setTimeout(startCheating, Math.floor(Math.random() * 1000) + 500);
+            });
+            
+            // 开始作弊 - 迪克伸向KSY
+            function startCheating() {
+                if (!teacherGameActive) return;
+                
+                cheatingInProgress = true;
+                message.textContent = "警告！林强正在尝试作弊！";
+                
+                // 重置迪克位置
+                dick.style.width = '0px';
+                dick.style.height = '6px';
+                dick.style.bottom = '-20px';
+                dick.style.left = '50%';
+                dick.style.transform = 'translateX(-50%)';
+                dick.style.display = 'block';
+                dickHead.style.display = 'none';
+                
+                // 迪克伸长动画 - 朝向KSY (学生4位置)
+                setTimeout(() => {
+                    // 计算KSY的位置（学生4在400px处）
+                    const ksydesk = document.querySelector('.desk-4');
+                    const ksydeskRect = ksydesk.getBoundingClientRect();
+                    const linqiangRect = linqiang.getBoundingClientRect();
+                    
+                    // 计算距离和角度
+                    const dx = ksydeskRect.left - linqiangRect.left;
+                    const dy = ksydeskRect.top - linqiangRect.top;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+                    
+                    // 调整迪克位置和方向
+                    dick.style.width = distance + 'px';
+                    dick.style.transform = `rotate(${angle}deg)`;
+                    dick.style.transformOrigin = 'left center';
+                    dick.style.left = '30px'; // 从林强身体中间开始
+                    dick.style.bottom = '40px'; // 调整垂直位置
+                    dickHead.style.display = 'block';
+                }, 300); // 更快的伸长动画
+                
+                // 1.5秒后如果没被阻止，作弊成功（更短的作弊时间）
+                setTimeout(() => {
+                    if (cheatingInProgress) {
+                        cheatingInProgress = false;
+                        message.textContent = "糟糕！林强作弊成功，纸条已用迪克递给柯基！";
+                        cheatSuccessCount++;
+                        updateCheatCount();
+                        
+                        // 检查是否达到3次成功
+                        if (cheatSuccessCount >= 3) {
+                            electrocuteTeacher();
+                        } else {
+                            resetCheating();
+                        }
+                    }
+                }, 1500); // 更短的作弊时间窗口
+            }
+            
+            // 召唤卡车
+            truckBtn.addEventListener('click', function() {
+                if (!teacherGameActive || !cheatingInProgress) {
+                    message.textContent = "现在不能召唤卡车！等作弊发生时再试。";
+                    return;
+                }
+                
+                cheatingInProgress = false;
+                message.textContent = "卡车出击！迪克压断中...";
+                cheatFailCount++;
+                updateCheatCount();
+                
+                // 检查是否达到3次失败
+                if (cheatFailCount >= 3) {
+                    executeLinqiang();
+                    return;
+                }
+                
+                // 显示卡车
+                truck.style.width = '150px';
+                
+                // 卡车移动动画
+                setTimeout(() => {
+                    truck.style.transform = 'translateX(600px)';
+                    
+                    // 卡车压到迪克时的效果
+                    setTimeout(() => {
+                        // 迪克断裂效果
+                        dick.style.width = '150px'; // 缩短迪克
+                        dickHead.style.display = 'none';
+                        
+                        // 喷血效果
+                        showBlood(linqiang.offsetLeft + 30, linqiang.offsetTop + 150);
+                        showBlood(linqiang.offsetLeft + 20, linqiang.offsetTop + 130);
+                        showBlood(linqiang.offsetLeft + 40, linqiang.offsetTop + 140);
+                        
+                        // 林强震动
+                        linqiang.classList.add('vibrate');
+                        
+                        message.textContent = "成功！林强的迪克被卡车压断，作弊阻止！";
+                        
+                        // 重置
+                        setTimeout(resetCheating, 1500); // 更快的重置
+                    }, 600); // 更快的动画
+                }, 100);
+            });
+            
+            // 电死监考老师 - 完整动画（迪克伸长后放电）
+            function electrocuteTeacher() {
+                message.textContent = "林强作弊成功3次！迪克放电中...";
+                
+                // 重置迪克位置
+                dick.style.width = '0px';
+                dick.style.height = '6px';
+                dick.style.bottom = '-20px';
+                dick.style.left = '50%';
+                dick.style.transform = 'translateX(-50%)';
+                dick.style.display = 'block';
+                dickHead.style.display = 'none';
+                
+                // 迪克伸长动画 - 朝向监考老师
+                setTimeout(() => {
+                    // 计算老师的位置
+                    const teacherRect = classTeacher.getBoundingClientRect();
+                    const linqiangRect = linqiang.getBoundingClientRect();
+                    
+                    // 计算距离和角度
+                    const dx = teacherRect.left - linqiangRect.left;
+                    const dy = teacherRect.top - linqiangRect.top;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+                    
+                    // 调整迪克位置和方向
+                    dick.style.width = distance + 'px';
+                    dick.style.transform = `rotate(${angle}deg)`;
+                    dick.style.transformOrigin = 'left center';
+                    dick.style.left = '30px'; // 从林强身体中间开始
+                    dick.style.bottom = '40px'; // 调整垂直位置
+                    dickHead.style.display = 'block';
+                    
+                    // 显示电击覆盖层
+                    electrocuteOverlay.style.display = 'block';
+                    
+                    // 林强震动
+                    linqiang.classList.add('vibrate');
+                    
+                    // 老师震动
+                    classTeacher.classList.add('vibrate');
+                    classTeacher.style.background = "#00f7ff";
+                    
+                    // 显示放电效果（从龟头到老师）
+                    setTimeout(() => {
+                        showLightning(
+                            linqiang.offsetLeft + 30 + distance * Math.cos(angle * Math.PI/180), 
+                            linqiang.offsetTop + 40 + distance * Math.sin(angle * Math.PI/180), 
+                            classTeacher.offsetLeft + 15, 
+                            classTeacher.offsetTop + 15
+                        );
+                        showLightning(
+                            linqiang.offsetLeft + 30 + distance * Math.cos(angle * Math.PI/180), 
+                            linqiang.offsetTop + 40 + distance * Math.sin(angle * Math.PI/180), 
+                            classTeacher.offsetLeft + 20, 
+                            classTeacher.offsetTop + 20
+                        );
+                        showLightning(
+                            linqiang.offsetLeft + 30 + distance * Math.cos(angle * Math.PI/180), 
+                            linqiang.offsetTop + 40 + distance * Math.sin(angle * Math.PI/180), 
+                            classTeacher.offsetLeft + 10, 
+                            classTeacher.offsetTop + 10
+                        );
+                    }, 300);
+                    
+                    // 老师被电焦效果
+                    setTimeout(() => {
+                        classTeacher.style.background = "#2c3e50";
+                        classTeacher.style.boxShadow = "0 0 20px #000";
+                    }, 800);
+                    
+                    setTimeout(() => {
+                        message.textContent = "监考老师被林强的迪克电死了！游戏结束。";
+                        setTimeout(() => {
+                            resetTeacherGame();
+                        }, 2000);
+                    }, 1500);
+                }, 300);
+            }
+            
+            // 处决林强
+            function executeLinqiang() {
+                message.textContent = "林强被抓3次作弊！卡车处决中...";
+                
+                // 显示卡车
+                truck.style.width = '150px';
+                
+                // 卡车移动动画
+                setTimeout(() => {
+                    truck.style.transform = 'translateX(600px)';
+                    
+                    // 卡车压到林强时的效果
+                    setTimeout(() => {
+                        // 隐藏林强
+                        linqiang.style.display = 'none';
+                        
+                        // 喷血效果
+                        showBlood(linqiang.offsetLeft + 30, linqiang.offsetTop + 150);
+                        showBlood(linqiang.offsetLeft + 20, linqiang.offsetTop + 130);
+                        showBlood(linqiang.offsetLeft + 40, linqiang.offsetTop + 140);
+                        showBlood(linqiang.offsetLeft + 10, linqiang.offsetTop + 120);
+                        showBlood(linqiang.offsetLeft + 50, linqiang.offsetTop + 160);
+                        
+                        message.textContent = "林强被卡车处决了！游戏结束。";
+                        
+                        setTimeout(resetTeacherGame, 2000); // 更快的重置
+                    }, 600); // 更快的动画
+                }, 100);
+            }
+            
+            // 显示血液效果
+            function showBlood(x, y) {
+                const bloods = [blood1, blood2, blood3];
+                for (let i = 0; i < bloods.length; i++) {
+                    if (bloods[i].style.display === 'none') {
+                        bloods[i].style.left = x + 'px';
+                        bloods[i].style.top = y + 'px';
+                        bloods[i].style.display = 'block';
+                        
+                        setTimeout(() => {
+                            bloods[i].style.display = 'none';
+                        }, 800); // 更快的消失
+                        break;
+                    }
+                }
+            }
+            
+            // 显示放电效果
+            function showLightning(startX, startY, endX, endY) {
+                const lightnings = [lightning1, lightning2, lightning3];
+                for (let i = 0; i < lightnings.length; i++) {
+                    if (lightnings[i].style.display === 'none') {
+                        // 计算闪电长度和角度
+                        const dx = endX - startX;
+                        const dy = endY - startY;
+                        const length = Math.sqrt(dx * dx + dy * dy);
+                        const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+                        
+                        lightnings[i].style.width = '5px';
+                        lightnings[i].style.height = length + 'px';
+                        lightnings[i].style.left = startX + 'px';
+                        lightnings[i].style.top = startY + 'px';
+                        lightnings[i].style.transform = `rotate(${angle}deg)`;
+                        lightnings[i].style.transformOrigin = 'top left';
+                        lightnings[i].style.display = 'block';
+                        lightnings[i].classList.add('electric');
+                        
+                        setTimeout(() => {
+                            lightnings[i].style.display = 'none';
+                            lightnings[i].classList.remove('electric');
+                        }, 300); // 更快的消失
+                        break;
+                    }
+                }
+            }
+            
+            // 重置作弊状态
+            function resetCheating() {
+                setTimeout(() => {
+                    dick.style.display = 'none';
+                    dick.style.width = '0px';
+                    dickHead.style.display = 'none';
+                    truck.style.width = '0px';
+                    truck.style.transform = 'translateX(0)';
+                    linqiang.classList.remove('vibrate');
+                    
+                    teacherGameActive = false;
+                    cheatingInProgress = false;
+                    
+                    startCheatBtn.disabled = false;
+                    
+                    // 随机时间后可能再次作弊（更频繁）
+                    message.textContent = "监控中... 注意林强的行为！";
+                    setTimeout(() => {
+                        if (Math.random() > 0.1) { // 90%的概率再次作弊
+                            startCheating();
+                        }
+                    }, 500); // 更短的等待时间（0.5秒）
+                }, 1000);
+            }
+            
+            // 重置老师游戏
+            function resetTeacherGame() {
+                dick.style.display = 'none';
+                dick.style.width = '0px';
+                dickHead.style.display = 'none';
+                truck.style.width = '0px';
+                truck.style.transform = 'translateX(0)';
+                if (linqiang) linqiang.classList.remove('vibrate');
+                if (linqiang) linqiang.style.display = 'block';
+                electrocuteOverlay.style.display = 'none';
+                classTeacher.classList.remove('vibrate');
+                classTeacher.style.background = "#e74c3c";
+                classTeacher.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.3)";
+                
+                teacherGameActive = false;
+                cheatingInProgress = false;
+                cheatSuccessCount = 0;
+                cheatFailCount = 0;
+                updateCheatCount();
+                
+                startCheatBtn.disabled = false;
+                message.textContent = "监考正在进行中... 注意观察学生行为！";
+                
+                blood1.style.display = 'none';
+                blood2.style.display = 'none';
+                blood3.style.display = 'none';
+                
+                lightning1.style.display = 'none';
+                lightning2.style.display = 'none';
+                lightning3.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
