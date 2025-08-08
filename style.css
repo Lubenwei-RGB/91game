@@ -1,0 +1,211 @@
+/* 新的自定义样式，覆盖旧样式 */
+
+/* CSS Variables for easy color changes */
+:root {
+    --primary-color: #20c997; /* 主题色 */
+    --background-color: #f8f9fa; /* 背景色 */
+    --sidebar-bg: #212529; /* 侧边栏背景色 */
+    --text-color-dark: #343a40; /* 深色文本 */
+    --text-color-light: #adb5bd; /* 浅色文本 */
+    --border-color: #e9ecef; /* 边框颜色 */
+    --shadow-color: rgba(0, 0, 0, 0.1);
+}
+
+body {
+    font-family: 'Open Sans', sans-serif;
+    color: var(--text-color-dark);
+    background-color: var(--background-color);
+    margin: 0;
+}
+
+h1, h2, h3, h4, h5, h6, .simple-text {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+}
+
+.wrapper {
+    display: flex;
+    min-height: 100vh;
+    box-shadow: 0 4px 12px var(--shadow-color);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+/* Sidebar Styling */
+.sidebar {
+    width: 260px;
+    background-color: var(--sidebar-bg);
+    color: var(--text-color-light);
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.sidebar.active {
+    margin-left: 0;
+}
+
+.sidebar-header {
+    padding: 20px 25px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-header a {
+    color: #fff;
+    font-size: 1.25rem;
+    display: flex;
+    align-items: center;
+}
+
+.sidebar-header img {
+    margin-right: 10px;
+    border-radius: 50%;
+}
+
+.sidebar-wrapper {
+    padding-top: 15px;
+    height: calc(100% - 100px); /* Adjust height for header and footer */
+    overflow-y: auto;
+}
+
+.sidebar-wrapper::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar-wrapper::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+}
+
+.sidebar .nav {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar .nav li a {
+    color: var(--text-color-light);
+    display: flex;
+    align-items: center;
+    padding: 15px 25px;
+    border-radius: 8px;
+    margin: 5px 15px;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.sidebar .nav li a:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: #fff;
+}
+
+.sidebar .nav li.active a {
+    background-color: var(--primary-color);
+    color: #fff;
+    box-shadow: 0 4px 6px rgba(32, 201, 151, 0.4);
+    font-weight: 600;
+}
+
+.sidebar .nav li i {
+    font-size: 1.25rem;
+    margin-right: 15px;
+}
+
+.sidebar-footer {
+    text-align: center;
+    padding: 20px;
+    font-size: 0.875rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-footer a {
+    color: var(--text-color-light);
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.sidebar-footer a:hover {
+    color: #fff;
+}
+
+/* Main Panel Styling */
+.main-panel {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: #fff;
+}
+
+.navbar {
+    background-color: #fff;
+    border-bottom: 1px solid var(--border-color);
+    padding: 15px 20px;
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-color-dark);
+}
+
+.navbar-toggle {
+    border: none;
+    padding: 0;
+}
+
+.navbar-toggle .icon-bar {
+    background-color: var(--text-color-dark);
+}
+
+.content {
+    padding: 20px;
+    flex-grow: 1;
+}
+
+.container-fluid {
+    padding: 0;
+}
+
+iframe {
+    width: 100%;
+    min-height: calc(100vh - 120px); /* Adjust based on navbar height */
+    border: none;
+    border-radius: 8px;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 991px) {
+    .wrapper {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+        height: auto;
+        margin-left: -100%;
+        position: fixed;
+        z-index: 1031;
+        box-shadow: none;
+    }
+
+    .sidebar.active {
+        margin-left: 0;
+        box-shadow: 0 4px 12px var(--shadow-color);
+    }
+
+    .main-panel {
+        width: 100%;
+        margin-top: 65px; /* Space for the fixed navbar */
+    }
+
+    .navbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: 1030;
+    }
+
+    .navbar-brand {
+        margin-left: 15px;
+    }
+}
