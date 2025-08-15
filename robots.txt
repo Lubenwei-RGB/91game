@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://xn--91-h26dl28d.xyz/sitemap.xml
