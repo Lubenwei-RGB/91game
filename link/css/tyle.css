@@ -1,0 +1,162 @@
+/* iOS 玻璃拟态 + 彩色渐变风格（圆角强化） for your profile layout */
+@import url("https://fonts.googleapis.com/css?family=Quicksand:400,500,700&subset=latin-ext");
+
+:root{
+  --radius: 24px;                 /* 统一大圆角 */
+  --blur: 20px;                   /* 毛玻璃强度 */
+  --glass: rgba(255,255,255,.08); /* 卡片玻璃底色 */
+  --stroke: rgba(255,255,255,.18);/* 玻璃描边 */
+  --txt-main:#e7ecf2;             /* 亮色文字(深色背景上) */
+  --txt-muted:#b8c2cc;
+  --bg:#0b0f15;                   /* 页面深色背景 */
+  /* 彩色渐变锚点 */
+  --c1:#00ffd0; --c2:#00aaff; --c3:#7a5cff; --c4:#ff6b6b;
+}
+
+html{position:relative;overflow-x:hidden!important}
+*{box-sizing:border-box}
+body{
+  font-family:'Quicksand',system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  color:var(--txt-main);
+  background:
+    radial-gradient(1000px 600px at 10% -10%, rgba(122,92,255,.18), transparent 60%),
+    radial-gradient(800px 500px at 110% 10%, rgba(0,170,255,.16), transparent 60%),
+    radial-gradient(900px 600px at 50% 120%, rgba(255,107,107,.16), transparent 60%),
+    var(--bg);
+  margin:0; padding:0;
+}
+
+a,a:hover{text-decoration:none}
+.icon{display:inline-block;width:1em;height:1em;stroke-width:0;stroke:currentColor;fill:currentColor}
+
+/* ====== 容器：保持你原来的结构，同时玻璃化 ====== */
+.wrapper{
+  width:100%; min-height:100vh; padding:50px 20px; padding-top:100px;
+  display:flex; align-items:center; justify-content:center;
+}
+@media (max-width:768px){.wrapper{padding-top:100px;}}
+
+/* ====== 主卡片（玻璃 + 渐变描边） ====== */
+.profile-card{
+  width:100%; max-width:780px; min-height:480px; margin:auto; position:relative;
+  border-radius:var(--radius);
+  background:var(--glass);
+  border:1px solid var(--stroke);
+  backdrop-filter: blur(var(--blur)) saturate(1.15);
+  -webkit-backdrop-filter: blur(var(--blur)) saturate(1.15);
+  box-shadow: 0 20px 60px rgba(0,0,0,.35);
+  overflow:hidden;
+}
+/* 外层彩色光晕描边 */
+.profile-card::before{
+  content:""; position:absolute; inset:-1px; border-radius:calc(var(--radius)+1px); pointer-events:none;
+  background: conic-gradient(from 180deg at 50% 50%, var(--c1), var(--c2), var(--c3), var(--c4), var(--c1));
+  filter: blur(14px) saturate(1.2); opacity:.25;
+}
+/* 顶部彩膜条 */
+.profile-card::after{
+  content:""; position:absolute; left:0; right:0; top:0; height:64px; pointer-events:none;
+  background: linear-gradient(135deg, rgba(0,255,208,.22), rgba(122,92,255,.22));
+}
+
+/* 激活态保留你原来的交互，但弱化模糊强度避免晕眩 */
+.profile-card.active .profile-card__cnt{filter: blur(4px)}
+.profile-card.active .profile-card-message,
+.profile-card.active .profile-card__overlay{opacity:1; pointer-events:auto; transition-delay:.1s}
+.profile-card.active .profile-card-form{transform:none; transition-delay:.1s}
+
+/* 头像：更柔和的霓虹边与圆角比例 */
+.profile-card__img{
+  width:160px; height:160px; margin:0 auto; transform: translateY(-50%);
+  border-radius:50%; overflow:hidden; position:relative; z-index:4;
+  box-shadow: 0 10px 40px rgba(0,0,0,.45), 0 0 0 8px rgba(107,74,255,.35);
+}
+@media (max-width:576px){.profile-card__img{width:128px;height:128px}}
+.profile-card__img img{display:block;width:100%;height:100%;object-fit:cover;border-radius:50%}
+
+/* 内容区 */
+.profile-card__cnt{margin-top:-35px;text-align:center;padding:0 24px 40px;transition: all .3s}
+.profile-card__name{font-weight:800;font-size:26px;color:#cfd8ff;margin-bottom:10px;letter-spacing:.3px}
+.profile-card__txt{font-size:16px;font-weight:500;color:var(--txt-muted);margin-bottom:12px}
+.profile-card__txt strong{font-weight:700;color:#fff}
+
+/* 位置行 */
+.profile-card-loc{display:flex;justify-content:center;align-items:center;font-size:16px;font-weight:700;color:#e5eaff}
+.profile-card-loc__icon{display:inline-flex;font-size:24px;margin-right:10px}
+
+/* 指标信息条：玻璃 pill */
+.profile-card-inf{display:flex;justify-content:center;flex-wrap:wrap;gap:12px;margin-top:28px}
+.profile-card-inf__item{
+  min-width:150px; padding:12px 18px; border-radius:999px; text-align:center;
+  color:#fff; background:rgba(255,255,255,.06); border:1px solid var(--stroke);
+  backdrop-filter: blur(var(--blur));
+}
+@media (max-width:768px){.profile-card-inf__item{min-width:120px;padding:10px 16px}}
+.profile-card-inf__title{font-weight:800;font-size:22px;color:#ffffff}
+.profile-card-inf__txt{font-weight:600;margin-top:6px;color:#d2d8ff}
+
+/* 社交图标：冰玻璃 + 悬停彩虹 */
+.profile-card-social{margin-top:22px;display:flex;justify-content:center;align-items:center;flex-wrap:wrap}
+.profile-card-social__item{
+  display:inline-flex;width:56px;height:56px;margin:10px;border-radius:50%;align-items:center;justify-content:center;
+  color:#fff; background:rgba(255,255,255,.08); border:1px solid var(--stroke);
+  box-shadow: 0 10px 30px rgba(0,0,0,.35); position:relative; font-size:20px; flex-shrink:0; transition:transform .25s ease, box-shadow .25s ease, background .25s ease;
+  backdrop-filter: blur(var(--blur));
+}
+.profile-card-social__item:hover{
+  transform: translateY(-4px);
+  background: linear-gradient(135deg, var(--c1), var(--c2), var(--c3), var(--c4));
+  box-shadow: 0 14px 36px rgba(0,0,0,.45);
+}
+
+/* CTA 按钮：玻璃按钮 + 渐变描边 */
+.profile-card-ctr{display:flex;justify-content:center;align-items:center;gap:18px;margin-top:34px;flex-wrap:wrap}
+.profile-card__button{
+  appearance:none;border:1px solid var(--stroke); background:rgba(255,255,255,.06);
+  color:#fff; font-weight:800; font-size:17px; padding:14px 28px; min-height:52px; border-radius:999px;
+  cursor:pointer; transition:transform .2s ease, box-shadow .2s ease, background .2s ease; backface-visibility:hidden;
+  backdrop-filter: blur(var(--blur));
+}
+.profile-card__button:hover{transform:translateY(-3px); box-shadow:0 12px 28px rgba(0,0,0,.35); background:rgba(255,255,255,.1)}
+.profile-card__button:focus{outline:none}
+/* 强调色版本 */
+.profile-card__button.button--blue{background: linear-gradient(135deg,#1da1f2,#0e71c8); border-color:transparent}
+.profile-card__button.button--orange{background: linear-gradient(135deg,#d5135a,#f05924); border-color:transparent}
+.profile-card__button.button--gray{background: rgba(255,255,255,.08); color:#eaeffd}
+
+/* 弹层表单也玻璃化 */
+.profile-card-message{position:absolute;inset:0;padding:130px 0 100px;opacity:0;pointer-events:none;transition:all .3s}
+.profile-card-form{
+  max-width:80%; margin:0 auto; height:100%; background:rgba(255,255,255,.08);
+  border-radius:var(--radius); padding:28px; transform:scale(.9);
+  border:1px solid var(--stroke); backdrop-filter: blur(var(--blur)); box-shadow:0 10px 40px rgba(0,0,0,.35);
+}
+@media (max-width:768px){.profile-card-form{max-width:92%;height:auto}}
+@media (max-width:576px){.profile-card-form{padding:18px}}
+.profile-card-form__bottom{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.profile-card textarea{
+  width:100%; height:210px; resize:none; margin-bottom:18px; border:1px solid var(--stroke); border-radius:16px;
+  padding:14px 16px; color:#fff; font-weight:600; background:rgba(255,255,255,.06); backdrop-filter: blur(var(--blur));
+}
+.profile-card textarea:focus{border-color:rgba(255,255,255,.35); outline:none}
+.profile-card__overlay{position:absolute;inset:0;pointer-events:none;opacity:0;background:rgba(22,33,72,.35);border-radius:var(--radius);transition:all .3s}
+
+/* 保留原有品牌色社交按钮类，但与新风格一致 */
+.profile-card-social__item.facebook{background:linear-gradient(45deg,#3b5998,#0078d7)}
+.profile-card-social__item.twitter{background:linear-gradient(45deg,#1da1f2,#0e71c8)}
+.profile-card-social__item.instagram{background:linear-gradient(45deg,#405de6,#5851db,#833ab4,#c13584,#e1306c,#fd1d1d)}
+.profile-card-social__item.behance{background:linear-gradient(45deg,#1769ff,#213fca)}
+.profile-card-social__item.github{background:linear-gradient(45deg,#333333,#626b73)}
+.profile-card-social__item.codepen{background:linear-gradient(45deg,#324e63,#414447)}
+.profile-card-social__item.link{background:linear-gradient(45deg,#d5135a,#f05924)}
+
+/* 移动端优化 */
+@media (max-width:768px){
+  .profile-card__name{font-size:22px}
+  .profile-card__txt{font-size:15px}
+}
+
+/* 减少动画偏好 */
+@media (prefers-reduced-motion: reduce){
+  .profile-card__button,.profile-card-social__item,.profile-card__cnt{transition:none}
+}

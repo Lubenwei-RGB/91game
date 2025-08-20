@@ -1,133 +1,209 @@
 <!doctype html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
-    <meta charset="utf-8" />
-    <link rel="icon" type="image/png" href="images/logo.png" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>3114514 的游戏平台 · iOS 玻璃风</title>
+  <meta name="description" content="手机端/电脑端自适应，支持折叠菜单，iOS 玻璃拟态 + 彩色渐变美化"/>
+  <!-- 网站图标 -->
+  <link rel="icon" type="image/png" href="images/logo.png" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Poppins:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#0b0f15;
+      --text:#e7ecf2;
+      --muted:#9aa5b1;
+      --card-glass:rgba(255,255,255,.08);
+      --card-stroke:rgba(255,255,255,.14);
+      --shadow:0 20px 60px rgba(0,0,0,.35);
+      --radius:22px;
+      --blur:18px;
+      --accent-1:#00ffd0;
+      --accent-2:#00aaff;
+      --accent-3:#7a5cff;
+      --accent-4:#ff6b6b;
+      --nav-h:64px;
+    }
 
-    <title>3114514的游戏平台</title>
-    <meta name="keywords" content="91平台,91小游戏平台 owned by 3114514!" />
-    <meta name="description" content="91平台，一套多个91小游戏网站合集" />
-    <meta name="author" content="" />
-    <meta name="copyright" content="" />
+    *{box-sizing:border-box}
+    html,body{height:100%;}
+    body{
+      margin:0;
+      background: radial-gradient(1000px 600px at 10% -10%,rgba(122,92,255,.20),transparent 60%),
+                  radial-gradient(800px 500px at 110% 10%,rgba(0,170,255,.18),transparent 60%),
+                  radial-gradient(900px 600px at 50% 120%,rgba(255,107,107,.18),transparent 60%),
+                  var(--bg);
+      color:var(--text);
+      font: 14px/1.6 Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei UI", "Microsoft YaHei", sans-serif;
+    }
 
-    <meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' name='viewport' />
-    <meta name="viewport" content="width=device-width" />
+    a{color:inherit;text-decoration:none}
+    .app{display:grid; grid-template-columns: 280px 1fr; gap:24px; padding:16px; min-height:100dvh;}
 
-    <link href="css/bootstrap.min.css" rel="stylesheet" />
+    .glass{
+      background: var(--card-glass);
+      border: 1px solid var(--card-stroke);
+      backdrop-filter: blur(var(--blur)) saturate(1.2);
+      -webkit-backdrop-filter: blur(var(--blur)) saturate(1.2);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      position:relative;
+      overflow:hidden;
+    }
+    .glass::before{
+      content:""; position:absolute; inset:0; pointer-events:none;
+      background:
+        conic-gradient(from 180deg at 50% 50%,rgba(255,255,255,.15),transparent 30%,rgba(255,255,255,.15) 60%, transparent 85%),
+        radial-gradient(600px 200px at 20% 0%, rgba(0,255,208,.18), transparent 60%),
+        radial-gradient(600px 200px at 80% 0%, rgba(122,92,255,.18), transparent 60%);
+      mask: linear-gradient(#000, transparent 30%), linear-gradient(#000, #000);
+      mask-composite: exclude;
+    }
 
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Poppins:wght@500;700&display=swap">
+    .topbar{height:var(--nav-h); display:flex; align-items:center; gap:12px; padding:0 16px;}
+    .brand{display:flex; align-items:center; gap:10px; font-weight:800; letter-spacing:.2px}
+    .brand img{
+      width:38px; height:38px; border-radius:12px; flex:0 0 auto;
+      box-shadow:0 6px 18px rgba(0,0,0,.35);
+    }
 
-    <link rel="stylesheet" href="css/font-awesome-4.7.0/css/font-awesome.min.css">
+    .menu-btn{appearance:none; border:0; background:var(--card-glass); border:1px solid var(--card-stroke); height:40px; width:40px; border-radius:14px; display:grid; place-items:center; color:var(--text); cursor:pointer}
+    .menu-btn i{display:block; width:18px; height:2px; background:currentColor; position:relative;}
+    .menu-btn i::before,.menu-btn i::after{content:""; position:absolute; left:0; width:100%; height:100%; background:currentColor;}
+    .menu-btn i::before{top:-6px} .menu-btn i::after{top:6px}
 
-    <link href="style.css" rel="stylesheet"/>
+    .sidebar{padding:14px; display:flex; flex-direction:column; gap:12px;}
+    .sidebar .head{display:flex; align-items:center; gap:10px; padding:12px; border-radius:16px;
+      background:linear-gradient(135deg, rgba(0,255,208,.18), rgba(122,92,255,.18));
+      border:1px solid rgba(255,255,255,.16);
+    }
+    .sidebar .head img{width:30px; height:30px; border-radius:8px}
+    .sidebar .head .title{font-weight:700}
 
-    <script>
-        window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
-    </script>
-    <script defer src="/_vercel/speed-insights/script.js"></script>
+    .nav{display:flex; flex-direction:column; gap:8px; margin:4px 0; padding:0; list-style:none}
+    .nav a{display:flex; align-items:center; gap:12px; padding:12px 12px; border-radius:16px; color:var(--text); opacity:.9; transition:.2s ease; position:relative;}
+    .nav a:hover{opacity:1; transform:translateY(-1px)}
+    .nav a.active{background:linear-gradient(135deg, rgba(0,170,255,.18), rgba(255,107,107,.18)); outline:1px solid rgba(255,255,255,.18)}
+
+    .sidebar .foot{margin-top:auto; display:flex; justify-content:space-between; align-items:center; padding:10px 8px; color:var(--muted); font-size:12px}
+
+    .main{display:flex; flex-direction:column; gap:16px}
+    .content{padding:12px;}
+    .frame-wrap{height:calc(100dvh - var(--nav-h) - 16px - 16px); border-radius:var(--radius); overflow:hidden;}
+    .frame{width:100%; height:100%; border:0; display:block; background:#0e131a}
+
+    .backdrop{position:fixed; inset:0; background:rgba(0,0,0,.45); opacity:0; visibility:hidden; transition:.25s ease;}
+    .backdrop.show{opacity:1; visibility:visible}
+
+    @media (max-width: 992px){
+      .app{grid-template-columns: 1fr;}
+      .sidebar{position:fixed; left:16px; top:16px; bottom:16px; width:min(86vw, 360px); z-index:40; transform:translateX(-120%); transition:transform .28s ease;}
+      .sidebar.open{transform:none}
+      .content{padding:0}
+      .frame-wrap{height:calc(100dvh - var(--nav-h) - 16px)}
+    }
+
+    .sidebar{overflow:auto}
+    .sidebar::-webkit-scrollbar{width:10px}
+    .sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.14); border-radius:12px}
+
+    @media (prefers-reduced-motion: reduce){
+      .nav a{transition:none}
+      .sidebar{transition:none}
+      .backdrop{transition:none}
+    }
+  </style>
 </head>
 <body>
-    <div class="wrapper">
-        <div class="sidebar" data-color="dark">
-            <div class="sidebar-header">
-                <a href="http:///3114514blog.s.odn.cc" target="_blank" class="simple-text">
-                    <img src="images/logo.png" width="30" height="30" alt="logo"/> 3114514's blog
-                </a>
-            </div>
+  <div class="app">
+    <aside id="sidebar" class="glass sidebar" aria-hidden="false" aria-label="侧边菜单">
+      <div class="head">
+        <img src="images/logo.png" alt="logo"/>
+        <div class="title">3114514 · Games</div>
+      </div>
+      <nav>
+        <ul class="nav" id="nav">
+          <li><a class="active" href="link/0.html" target="right">🎮 All games</a></li>
+          <li><a href="link/1.html" target="right">🧠 IQ boost games</a></li>
+          <li><a href="link/2.html" target="right">🕹️ Movement games</a></li>
+          <li><a href="link/3.html" target="right">🚀 Shoot games</a></li>
+          <li><a href="link/4.html" target="right">🌀 Distort games</a></li>
+          <li><a href="link/5.html" target="right">🌿 Relax games</a></li>
+          <li><a href="link/6.html" target="right">♟️ Board games</a></li>
+        </ul>
+      </nav>
+      <div class="foot">
+        <span>© 3114514</span>
+        <a href="https://www.3114514.xyz" target="_blank" rel="noopener">官网</a>
+      </div>
+    </aside>
 
-            <div class="sidebar-wrapper">
-                <ul class="nav">
-                    <li class="active">
-                        <a href="link/0.html" target="right">
-                            <i class="fa fa-twitch"></i>
-                            <p>All games</p>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="link/1.html" target="right">
-                            <i class="fa fa-mortar-board"></i>
-                            <p>IQ boost games</p>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="link/2.html" target="right">
-                            <i class="fa fa-reddit-alien"></i>
-                            <p>movement games</p>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="link/3.html" target="right">
-                            <i class="fa fa-rocket"></i>
-                            <p>shoot games</p>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="link/4.html" target="right">
-                            <i class="fa fa-houzz"></i>
-                            <p>distort games</p>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="link/5.html" target="right">
-                            <i class="fa fa-modx"></i>
-                            <p>relax games</p>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="link/6.html" target="right">
-                            <i class="fa fa-delicious"></i>
-                            <p>board games</p>
-                        </a>
-                    </li>
-                </ul>
-                <div class="sidebar-footer">
-                    <a href="https://www.3114514.xyz" target="_blank">© 3114514!</a>
-                </div>
-            </div>
+    <main class="main">
+      <header class="glass topbar">
+        <button id="menuBtn" class="menu-btn" aria-label="打开菜单" aria-controls="sidebar" aria-expanded="false"><i></i></button>
+        <div class="brand">
+          <img src="images/logo.png" alt="logo"/>
+          <div>
+            <div style="font-weight:800;line-height:1">游戏平台</div>
+            <div style="font-size:12px;color:var(--muted);line-height:1">Mobile/Desktop 自适应 · 玻璃拟态</div>
+          </div>
         </div>
+      </header>
 
-        <div class="main-panel">
-            <nav class="navbar">
-                <div class="container-fluid">
-                    <div class="navbar-header">
-                        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#sidebarCollapse">
-                            <span class="sr-only">切换导航</span>
-                            <span class="icon-bar"></span>
-                            <span class="icon-bar"></span>
-                            <span class="icon-bar"></span>
-                        </button>
-                        <a class="navbar-brand" href="#">游戏平台</a>
-                    </div>
-                    <div class="collapse navbar-collapse" id="sidebarCollapse">
-                        </div>
-                </div>
-            </nav>
-            <div class="content">
-                <div class="container-fluid">
-                    <iframe src="link/0.html" width="100%" height="999" name="right" style="border: none;" ></iframe>
-                </div>
-            </div>
+      <section class="content">
+        <div class="glass frame-wrap">
+          <iframe id="frame" class="frame" name="right" src="link/0.html" title="内容"></iframe>
         </div>
-    </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="backdrop" class="backdrop" aria-hidden="true"></div>
+
+  <script>
+    (function(){
+      const sidebar = document.getElementById('sidebar');
+      const menuBtn = document.getElementById('menuBtn');
+      const backdrop = document.getElementById('backdrop');
+      const nav = document.getElementById('nav');
+      const mq = window.matchMedia('(max-width: 992px)');
+
+      function isMobile(){ return mq.matches }
+
+      function openSidebar(){
+        if(!isMobile()) return;
+        sidebar.classList.add('open');
+        document.body.style.overflow='hidden';
+        backdrop.classList.add('show');
+        menuBtn.setAttribute('aria-expanded','true');
+      }
+
+      function closeSidebar(){
+        sidebar.classList.remove('open');
+        document.body.style.overflow='';
+        backdrop.classList.remove('show');
+        menuBtn.setAttribute('aria-expanded','false');
+      }
+
+      function toggleSidebar(){
+        if (sidebar.classList.contains('open')) closeSidebar(); else openSidebar();
+      }
+
+      menuBtn.addEventListener('click', toggleSidebar);
+      backdrop.addEventListener('click', closeSidebar);
+      window.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeSidebar() });
+
+      nav.addEventListener('click', (e)=>{
+        const a = e.target.closest('a');
+        if(!a) return;
+        nav.querySelectorAll('a').forEach(el=>el.classList.remove('active'));
+        a.classList.add('active');
+        if(isMobile()) closeSidebar();
+      });
+
+      mq.addEventListener('change', ()=>{ closeSidebar(); });
+    })();
+  </script>
 </body>
-
-    <script src="js/jquery-3.1.0.min.js" type="text/javascript"></script>
-    <script src="js/bootstrap.min.js" type="text/javascript"></script>
-    <script src="js/material.min.js" type="text/javascript"></script>
-    
-    <script type="text/javascript">
-        $(document).ready(function(){
-            $(".nav li").click(function(){
-                $(".nav li").removeClass("active");
-                $(this).addClass("active");
-            });
-
-            // Handle mobile navbar toggle
-            $('.navbar-toggle').click(function(){
-                $('.sidebar').toggleClass('active');
-            });
-        });
-    </script>
-
 </html>
