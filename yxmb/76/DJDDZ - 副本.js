@@ -1,4 +1,4 @@
-// DJDDZ.js - 修复连对压制bug + 超高难度AI + 音频系统 + 丝滑动画
+// DJDDZ.js - 修复连对压制bug + 超高难度AI + 音频系统
 var DJDDZ = {};
 
 // 音频播放器
@@ -38,13 +38,6 @@ DJDDZ.Init = function(canvasID) {
 
         JMain.JForm.addControlInLast([easyButton, mediumButton, hardButton]);
         JMain.JForm.show();
-        
-        // 开启全局动画刷新循环，实现丝滑移动 (约 60FPS)
-        if (!GMain.AnimationLoop) {
-            GMain.AnimationLoop = setInterval(function() {
-                if (JMain.JForm) JMain.JForm.show();
-            }, 16);
-        }
     });
 }
 
@@ -85,7 +78,7 @@ DJDDZ.InitGame = function(){
     GMain.BeginNum = GMain.DealerNum;
     GMain.playedCards = [];
     GMain.playedCount = {};
-    for (var i = 3; i <= 18; i++) GMain.playedCount[i] = 0;
+    for (var i = 3; i <= 17; i++) GMain.playedCount[i] = 0;
 }
 
 DJDDZ.Dealing = function(){
@@ -98,15 +91,7 @@ DJDDZ.Dealing = function(){
     } else {
         if(GMain.DealerNum > 3) GMain.DealerNum = 1;
         var r = JFunction.Random(0, GMain.Poker[0].length - 1);
-        var p = GMain.Poker[0][r];
-        
-        // 换算坐标使得发牌动画连贯
-        var absX = p.relativePosition.x + GMain.PokerPanel0.position.x;
-        var absY = p.relativePosition.y + GMain.PokerPanel0.position.y;
-        var newPanel = GMain['PokerPanel'+GMain.DealerNum];
-        p.setRelativePosition({x: absX - newPanel.position.x, y: absY - newPanel.position.y});
-
-        GMain.Poker[GMain.DealerNum].splice(GMain.Poker[GMain.DealerNum].length, 0, p);
+        GMain.Poker[GMain.DealerNum].splice(GMain.Poker[GMain.DealerNum].length, 0, GMain.Poker[0][r]);
         GMain.Poker[0].splice(r, 1);
         GMain.DealingNum++;
         GMain.DealerNum++;
@@ -125,18 +110,9 @@ DJDDZ.GrabTheLandlord = function(){
         GMain.DealerNum = GMain.LandlordNum;
         GMain.LastHandNum = 0;
         GMain.PokerPanel0.hidePoker = false;
-        
-        // 丝滑移交底牌
-        for(var i = 2; i >= 0; i--){
-            var p = GMain.Poker[0][i];
-            var absX = p.relativePosition.x + GMain.PokerPanel0.position.x;
-            var absY = p.relativePosition.y + GMain.PokerPanel0.position.y;
-            var newPanel = GMain['PokerPanel'+GMain.LandlordNum];
-            p.setRelativePosition({x: absX - newPanel.position.x, y: absY - newPanel.position.y});
-            GMain.Poker[GMain.LandlordNum].splice(GMain.Poker[GMain.LandlordNum].length, 0, p);
-        }
-        GMain.Poker[0] = [];
-        
+        GMain.Poker[GMain.LandlordNum].splice(GMain.Poker[GMain.LandlordNum].length, 0, GMain.Poker[0][2]);
+        GMain.Poker[GMain.LandlordNum].splice(GMain.Poker[GMain.LandlordNum].length, 0, GMain.Poker[0][1]);
+        GMain.Poker[GMain.LandlordNum].splice(GMain.Poker[GMain.LandlordNum].length, 0, GMain.Poker[0][0]);
         GMain.ToPlay = true;
         DJDDZ.ToPlay();
         return;
@@ -375,10 +351,9 @@ DJDDZ.GetPokerByType = function(__pokerNumbers, type){
     return SPN;
 }
 
-// 加入完整的映射，让AI识别 2, 小王, 大王
 var pokerValueMap = {
     3:3,4:4,5:5,6:6,7:7,8:8,9:9,10:10,
-    11:11,12:12,13:13,14:14,16:16,17:17,18:18
+    11:11,12:12,13:13,14:14,15:15,16:16,17:17
 };
 
 // ========== 辅助函数 ==========
@@ -387,7 +362,7 @@ function getHandNumbers() {
     for (var i = 0; i < GMain.Poker[GMain.DealerNum].length; i++) {
         nums.push(GMain.Poker[GMain.DealerNum][i].pokerNumber);
     }
-    nums.sort(function(a,b){return pokerValueMap[a]-pokerValueMap[b];});
+    nums.sort(function(a,b){return a-b;});
     return nums;
 }
 
@@ -399,52 +374,38 @@ function recordPlayedCards(cards) {
     }
 }
 
-function getCounts(hand) {
-    var counts = {};
-    for(var i=0; i<hand.length; i++) {
-        counts[hand[i]] = (counts[hand[i]] || 0) + 1;
-    }
-    return counts;
+function getRemainCount(num) {
+    var total = (num === 16 || num === 17) ? 2 : 4;
+    var played = GMain.playedCount[num] || 0;
+    var hand = getHandNumbers();
+    var inHand = 0;
+    for (var i = 0; i < hand.length; i++) if (hand[i] === num) inHand++;
+    return total - played - inHand;
 }
 
-// 提取所有的顺子（不能包含2，小王，大王）
-function getAllStraights(hand) {
-    var counts = getCounts(hand);
-    var result = [];
-    var sorted = Object.keys(counts).filter(function(v){
-        var n = Number(v);
-        return counts[v] >= 1 && n <= 14; 
-    }).map(Number).sort(function(a,b){return a-b;});
-    
-    var i = 0;
-    while (i < sorted.length) {
-        var len = 1;
-        while (i+len < sorted.length && sorted[i+len] === sorted[i+len-1] + 1) len++;
-        if (len >= 5) {
-            for (var l = 5; l <= len; l++) {
-                for (var start = i; start + l - 1 < i+len; start++) {
-                    result.push({start: sorted[start], length: l});
-                }
-            }
-        }
-        i += len;
-    }
-    return result;
+function shouldUseBomb(bombNum) {
+    var handCount = GMain.Poker[GMain.DealerNum].length;
+    if (handCount <= 5) return true;
+    var opponent1 = (GMain.DealerNum === 1) ? 2 : 1;
+    var opponent2 = (GMain.DealerNum === 1) ? 3 : 1;
+    var opp1Cards = GMain.Poker[opponent1] ? GMain.Poker[opponent1].length : 0;
+    var opp2Cards = GMain.Poker[opponent2] ? GMain.Poker[opponent2].length : 0;
+    if (opp1Cards <= 3 || opp2Cards <= 3) return true;
+    if (bombNum === 17) return false;
+    return Math.random() < 0.7;
 }
 
-// 提取所有的连对
+// 获取手牌中所有可能的连对（返回最小点数数组）
 function getAllStraightPairs(hand) {
-    var counts = getCounts(hand);
+    var counts = {};
+    for (var i = 0; i < hand.length; i++) counts[hand[i]] = (counts[hand[i]] || 0) + 1;
     var result = [];
-    var sorted = Object.keys(counts).filter(function(v){
-        var n = Number(v);
-        return counts[v] >= 2 && n <= 14;
-    }).map(Number).sort(function(a,b){return a-b;});
-    
+    // 连对至少3对
+    var sorted = Object.keys(counts).filter(function(v){return counts[v] >= 2;}).map(Number).sort(function(a,b){return a-b;});
     var i = 0;
     while (i < sorted.length) {
         var len = 1;
-        while (i+len < sorted.length && sorted[i+len] === sorted[i+len-1] + 1) len++;
+        while (i+len < sorted.length && sorted[i+len] === sorted[i+len-1] + 1 && counts[sorted[i+len]] >= 2) len++;
         if (len >= 3) {
             for (var l = 3; l <= len; l++) {
                 for (var start = i; start + l - 1 < i+len; start++) {
@@ -457,188 +418,236 @@ function getAllStraightPairs(hand) {
     return result;
 }
 
-// 超强主动出牌策略
-function getBestLead(hand, difficulty) {
-    var counts = getCounts(hand);
-    var uniqueVals = Object.keys(counts).map(Number).sort(function(a,b){return pokerValueMap[a]-pokerValueMap[b];});
-
-    // 1. 尝试出顺子
-    var straights = getAllStraights(hand);
-    if (straights.length > 0 && difficulty !== 'easy') {
-        var best = straights[0]; 
-        var res = [];
-        for (var i=0; i<best.length; i++) res.push(best.start + i);
-        return res;
+// 获取手牌中所有可能的顺子（单顺）
+function getAllStraights(hand) {
+    var counts = {};
+    for (var i = 0; i < hand.length; i++) counts[hand[i]] = (counts[hand[i]] || 0) + 1;
+    var result = [];
+    var sorted = Object.keys(counts).filter(function(v){return counts[v] >= 1;}).map(Number).sort(function(a,b){return a-b;});
+    var i = 0;
+    while (i < sorted.length) {
+        var len = 1;
+        while (i+len < sorted.length && sorted[i+len] === sorted[i+len-1] + 1 && counts[sorted[i+len]] >= 1) len++;
+        if (len >= 5) {
+            for (var l = 5; l <= len; l++) {
+                for (var start = i; start + l - 1 < i+len; start++) {
+                    result.push({start: sorted[start], length: l});
+                }
+            }
+        }
+        i += len;
     }
+    return result;
+}
 
-    // 2. 尝试出连对
-    var straightPairs = getAllStraightPairs(hand);
-    if (straightPairs.length > 0 && difficulty !== 'easy') {
-        var best = straightPairs[0];
-        var res = [];
-        for (var i=0; i<best.length; i++) { res.push(best.start + i); res.push(best.start + i); }
-        return res;
+// 修复后的核心压制函数：严格检查牌型与长度
+function getMinBeatHand(hand, lastType) {
+    if (GMain.LastHandNum === 0) return null;
+    
+    // 1. 单张
+    if (lastType.type === "1") {
+        for (var i = 0; i < hand.length; i++) {
+            if (pokerValueMap[hand[i]] > pokerValueMap[lastType.num]) {
+                return [hand[i]];
+            }
+        }
     }
-
-    // 3. 尝试出三带一/二
-    var triples = uniqueVals.filter(function(v){return counts[v]>=3;});
-    if (triples.length > 0 && difficulty !== 'easy') {
-        var triple = triples[0];
-        var res = [triple, triple, triple];
-        for(var i=0; i<uniqueVals.length; i++) {
-            if (uniqueVals[i] !== triple && counts[uniqueVals[i]] === 1) {
-                res.push(uniqueVals[i]);
+    // 2. 对子（包括连对）
+    else if (lastType.type === "11") {
+        var pairLen = lastType.length / 2;  // 对子个数，1为普通对子，>1为连对
+        if (pairLen === 1) {
+            // 普通对子：找更大的对子
+            var counts = {};
+            for (var i = 0; i < hand.length; i++) counts[hand[i]] = (counts[hand[i]] || 0) + 1;
+            var candidates = [];
+            for (var v in counts) {
+                if (counts[v] >= 2 && pokerValueMap[parseInt(v)] > pokerValueMap[lastType.num]) {
+                    candidates.push(parseInt(v));
+                }
+            }
+            if (candidates.length) {
+                candidates.sort(function(a,b){return pokerValueMap[a]-pokerValueMap[b];});
+                var pair = candidates[0];
+                var res = [];
+                for (var i = 0; i < hand.length && res.length < 2; i++) if (hand[i] === pair) res.push(hand[i]);
+                return res;
+            }
+        } else {
+            // 连对：需要长度相同的连对且最小点数更大
+            var straightPairs = getAllStraightPairs(hand);
+            var best = null;
+            for (var i = 0; i < straightPairs.length; i++) {
+                var sp = straightPairs[i];
+                if (sp.length === pairLen && sp.start > lastType.num) {
+                    if (!best || sp.start < best.start) best = sp;
+                }
+            }
+            if (best) {
+                var res = [];
+                var needCount = {};
+                for (var n = best.start; n < best.start + best.length; n++) needCount[n] = 2;
+                for (var i = 0; i < hand.length && Object.keys(needCount).length > 0; i++) {
+                    var val = hand[i];
+                    if (needCount[val]) {
+                        res.push(val);
+                        needCount[val]--;
+                        if (needCount[val] === 0) delete needCount[val];
+                    }
+                }
                 return res;
             }
         }
-        var pairs = uniqueVals.filter(function(v){return counts[v]===2;});
-        if (pairs.length > 0) {
-            res.push(pairs[0]); res.push(pairs[0]);
+    }
+    // 3. 三带一/三带二（连三暂时不处理复杂情况，只处理单组三带）
+    else if (lastType.type === "1112") {
+        var counts = {};
+        for (var i = 0; i < hand.length; i++) counts[hand[i]] = (counts[hand[i]] || 0) + 1;
+        var tripleCandidates = [];
+        for (var v in counts) {
+            if (counts[v] >= 3 && pokerValueMap[parseInt(v)] > pokerValueMap[lastType.num]) {
+                tripleCandidates.push(parseInt(v));
+            }
+        }
+        if (tripleCandidates.length) {
+            tripleCandidates.sort(function(a,b){return pokerValueMap[a]-pokerValueMap[b];});
+            var triple = tripleCandidates[0];
+            var res = [];
+            for (var i = 0; i < hand.length && res.length < 3; i++) if (hand[i] === triple) res.push(hand[i]);
+            // 带一张最小的单牌
+            for (var i = 0; i < hand.length; i++) {
+                if (hand[i] !== triple) { res.push(hand[i]); break; }
+            }
             return res;
         }
-        return res; 
     }
-
-    // 4. 尝试出对子
-    var pairs = uniqueVals.filter(function(v){return counts[v]===2;});
-    if (pairs.length > 0) return [pairs[0], pairs[0]];
-
-    // 5. 最小单牌
-    var singles = uniqueVals.filter(function(v){return counts[v]===1;});
-    if (singles.length > 0) return [singles[0]];
-
-    return [uniqueVals[0]];
+    // 4. 炸弹
+    else if (lastType.type === "1111") {
+        var counts = {};
+        for (var i = 0; i < hand.length; i++) counts[hand[i]] = (counts[hand[i]] || 0) + 1;
+        var bombCandidates = [];
+        for (var v in counts) {
+            if (counts[v] === 4) {
+                var numVal = parseInt(v);
+                if (numVal > lastType.num) bombCandidates.push(numVal);
+            }
+        }
+        if (bombCandidates.length) {
+            bombCandidates.sort(function(a,b){return pokerValueMap[a]-pokerValueMap[b];});
+            var bombNum = bombCandidates[0];
+            if (shouldUseBomb(bombNum)) {
+                var res = [];
+                for (var i = 0; i < hand.length && res.length < 4; i++) if (hand[i] === bombNum) res.push(hand[i]);
+                return res;
+            }
+        }
+        // 王炸
+        var hasJoker = false, hasBigJoker = false;
+        for (var i = 0; i < hand.length; i++) {
+            if (hand[i] === 16) hasJoker = true;
+            if (hand[i] === 17) hasBigJoker = true;
+        }
+        if (hasJoker && hasBigJoker) return [16, 17];
+    }
+    // 5. 王炸
+    else if (lastType.type === "12") {
+        return null; // 王炸无人能压
+    }
+    
+    // 如果上面没找到，尝试炸弹（普通牌型下可用炸弹压制）
+    if (lastType.type !== "1111" && lastType.type !== "12") {
+        var counts = {};
+        for (var i = 0; i < hand.length; i++) counts[hand[i]] = (counts[hand[i]] || 0) + 1;
+        for (var v in counts) {
+            if (counts[v] === 4) {
+                var bombNum = parseInt(v);
+                if (shouldUseBomb(bombNum)) {
+                    var res = [];
+                    for (var i = 0; i < hand.length && res.length < 4; i++) if (hand[i] === bombNum) res.push(hand[i]);
+                    return res;
+                }
+            }
+        }
+        var hasJoker = false, hasBigJoker = false;
+        for (var i = 0; i < hand.length; i++) {
+            if (hand[i] === 16) hasJoker = true;
+            if (hand[i] === 17) hasBigJoker = true;
+        }
+        if (hasJoker && hasBigJoker) return [16, 17];
+    }
+    
+    return null;
 }
 
-// 修正后且涵盖全面的完美压制大脑
-function getMinBeatHand(hand, lastType) {
-    if (!lastType) return null;
-    var counts = getCounts(hand);
-    var uniqueVals = Object.keys(counts).map(Number).sort(function(a,b){return pokerValueMap[a]-pokerValueMap[b];});
+// 简单模式
+function getEasyPlay() {
+    var hand = getHandNumbers();
+    if (hand.length === 0) return [];
+    if (GMain.LastHandNum === 0) return [hand[0]];
+    if (GMain.LastHandPokerType.type === "1" && Math.random() < 0.4) {
+        for (var i = 0; i < hand.length; i++) {
+            if (pokerValueMap[hand[i]] > pokerValueMap[GMain.LastHandPokerType.num])
+                return [hand[i]];
+        }
+    }
+    return [];
+}
 
-    var res = [];
-    
-    if (lastType.type === "1") {
-        if (lastType.length === 1) {
-            for (var i=0; i<uniqueVals.length; i++) {
-                if (pokerValueMap[uniqueVals[i]] > pokerValueMap[lastType.num]) return [uniqueVals[i]];
-            }
-        } else {
-            var straights = getAllStraights(hand);
-            for (var i=0; i<straights.length; i++) {
-                if (straights[i].length >= lastType.length && pokerValueMap[straights[i].start] > pokerValueMap[lastType.num]) {
-                    for(var j=0; j<lastType.length; j++) res.push(straights[i].start + j);
-                    return res;
-                }
-            }
-        }
-    }
-    else if (lastType.type === "11") {
-        if (lastType.length === 2) {
-            for (var i=0; i<uniqueVals.length; i++) {
-                if (counts[uniqueVals[i]] >= 2 && pokerValueMap[uniqueVals[i]] > pokerValueMap[lastType.num]) {
-                    return [uniqueVals[i], uniqueVals[i]];
-                }
-            }
-        } else {
-            var pairLen = lastType.length / 2;
-            var straightPairs = getAllStraightPairs(hand);
-            for (var i=0; i<straightPairs.length; i++) {
-                if (straightPairs[i].length >= pairLen && pokerValueMap[straightPairs[i].start] > pokerValueMap[lastType.num]) {
-                    for(var j=0; j<pairLen; j++) { res.push(straightPairs[i].start + j); res.push(straightPairs[i].start + j); }
-                    return res;
-                }
-            }
-        }
-    }
-    else if (lastType.type === "111") {
-        var tripLen = lastType.length / 3;
-        if (tripLen === 1) {
-            for (var i=0; i<uniqueVals.length; i++) {
-                if (counts[uniqueVals[i]] >= 3 && pokerValueMap[uniqueVals[i]] > pokerValueMap[lastType.num]) {
-                    return [uniqueVals[i], uniqueVals[i], uniqueVals[i]];
-                }
-            }
-        }
-    }
-    else if (lastType.type === "1112") {
-        var tripLen = lastType.length / 4;
-        if (tripLen === 1) {
-            for (var i=0; i<uniqueVals.length; i++) {
-                if (counts[uniqueVals[i]] >= 3 && pokerValueMap[uniqueVals[i]] > pokerValueMap[lastType.num]) {
-                    var triple = uniqueVals[i];
-                    res = [triple, triple, triple];
-                    for (var j=0; j<uniqueVals.length; j++) {
-                        if (uniqueVals[j] !== triple) {
-                            res.push(uniqueVals[j]);
-                            return res;
-                        }
-                    }
-                }
-            }
-        }
-    }
-    else if (lastType.type === "11122") {
-        var tripLen = lastType.length / 5;
-        if (tripLen === 1) {
-            for (var i=0; i<uniqueVals.length; i++) {
-                if (counts[uniqueVals[i]] >= 3 && pokerValueMap[uniqueVals[i]] > pokerValueMap[lastType.num]) {
-                    var triple = uniqueVals[i];
-                    res = [triple, triple, triple];
-                    for (var j=0; j<uniqueVals.length; j++) {
-                        if (uniqueVals[j] !== triple && counts[uniqueVals[j]] >= 2) {
-                            res.push(uniqueVals[j], uniqueVals[j]);
-                            return res;
-                        }
-                    }
-                }
-            }
-        }
-    }
-    else if (lastType.type === "1111") {
-        for (var i=0; i<uniqueVals.length; i++) {
-            if (counts[uniqueVals[i]] === 4 && pokerValueMap[uniqueVals[i]] > pokerValueMap[lastType.num]) {
-                return [uniqueVals[i], uniqueVals[i], uniqueVals[i], uniqueVals[i]];
-            }
-        }
-    }
+// 中等模式
+function getMediumPlay() {
+    var hand = getHandNumbers();
+    if (hand.length === 0) return [];
+    if (GMain.LastHandNum === 0) return [hand[0]];
+    var beat = getMinBeatHand(hand, GMain.LastHandPokerType);
+    return beat || [];
+}
 
-    // 不成类型压制且被逼无奈，寻找炸弹
-    if (lastType.type !== "1111" && lastType.type !== "12") {
-        for (var i=0; i<uniqueVals.length; i++) {
-            if (counts[uniqueVals[i]] === 4) {
-                return [uniqueVals[i], uniqueVals[i], uniqueVals[i], uniqueVals[i]];
+// 困难模式（加强版：优先寻找最优压制，必要时拆牌）
+function getHardPlay() {
+    var hand = getHandNumbers();
+    if (hand.length === 0) return [];
+    if (GMain.LastHandNum === 0) {
+        // 首出策略：出单张小牌，避免拆顺子
+        return [hand[0]];
+    }
+    var beat = getMinBeatHand(hand, GMain.LastHandPokerType);
+    if (beat) return beat;
+    // 如果压不住但手牌很少，尝试炸弹
+    if (hand.length <= 3) {
+        var counts = {};
+        for (var i = 0; i < hand.length; i++) counts[hand[i]] = (counts[hand[i]] || 0) + 1;
+        for (var v in counts) {
+            if (counts[v] === 4) {
+                var res = [];
+                for (var i = 0; i < hand.length && res.length < 4; i++) if (hand[i] === parseInt(v)) res.push(hand[i]);
+                return res;
             }
         }
-    }
-
-    // 最后的绝杀，王炸
-    if (lastType.type !== "12") {
-        if (counts[17] >= 1 && counts[18] >= 1) {
-            return [17, 18];
+        var hasJoker = false, hasBigJoker = false;
+        for (var i = 0; i < hand.length; i++) {
+            if (hand[i] === 16) hasJoker = true;
+            if (hand[i] === 17) hasBigJoker = true;
         }
+        if (hasJoker && hasBigJoker) return [16, 17];
     }
-
-    return null; 
+    return [];
 }
 
 DJDDZ.AISelectPoker = function() {
-    var hand = getHandNumbers();
-    if (hand.length === 0) return false;
-
     var selected = [];
-    if (GMain.LastHandNum === 0) {
-        selected = getBestLead(hand, GMain.difficulty);
+    if (GMain.difficulty === 'easy') {
+        selected = getEasyPlay();
+    } else if (GMain.difficulty === 'medium') {
+        selected = getMediumPlay();
     } else {
-        selected = getMinBeatHand(hand, GMain.LastHandPokerType);
+        selected = getHardPlay();
     }
     
     if (selected && selected.length > 0) {
-        var pHand = GMain.Poker[GMain.DealerNum];
+        var hand = GMain.Poker[GMain.DealerNum];
         for (var i = 0; i < selected.length; i++) {
-            for (var j = 0; j < pHand.length; j++) {
-                if (!pHand[j].isSelected && pHand[j].pokerNumber === selected[i]) {
-                    pHand[j].isSelected = true;
+            for (var j = 0; j < hand.length; j++) {
+                if (!hand[j].isSelected && hand[j].pokerNumber === selected[i]) {
+                    hand[j].isSelected = true;
                     break;
                 }
             }
@@ -654,17 +663,7 @@ DJDDZ.PlayPoker = function(){
     for(var i = GMain.Poker[GMain.DealerNum].length - 1; i >= 0; i--){
         if(GMain.Poker[GMain.DealerNum][i].isSelected){
             _pokerNumbers[_pokerNumbers.length] = GMain.Poker[GMain.DealerNum][i].pokerNumber;
-            
-            var p = GMain.Poker[GMain.DealerNum][i];
-            p.isSelected = false;
-
-            // 转换绝对坐标系，从而确保丢到中间显示区(PokerPanel4)时能够丝滑位移
-            var panel = GMain['PokerPanel'+GMain.DealerNum];
-            var absX = p.relativePosition.x + panel.position.x;
-            var absY = p.relativePosition.y + panel.position.y;
-            p.setRelativePosition({x: absX - GMain.PokerPanel4.position.x, y: absY - GMain.PokerPanel4.position.y});
-
-            GMain.Poker[4].splice(GMain.Poker[4].length, 0, p);
+            GMain.Poker[4].splice(GMain.Poker[4].length, 0, GMain.Poker[GMain.DealerNum][i]);
             GMain.Poker[GMain.DealerNum].splice(i, 1);
         }
     }
@@ -716,7 +715,6 @@ var GMain = {
     difficulty: 'medium',
     playedCards: [],
     playedCount: {},
-    AnimationLoop: null,
     PokerTypes: {
         "1": {weight:1, allNum:1, minL:5, maxL:12},
         "11": {weight:1, allNum:2, minL:3, maxL:10},
@@ -737,7 +735,6 @@ GControls.Poker = Class.create(JControls.Object, {
     imageData: null,
     isHidePoker: true,
     isSelected: null,
-    targetPosition: null, // 注入：目标插值坐标
     initialize: function ($super, imageName) {
         $super();
         this.setSize(GMain.PokerSize);
@@ -745,25 +742,11 @@ GControls.Poker = Class.create(JControls.Object, {
         this.pokerNumber = this.imageData.num;
         this.seNumber = this.imageData.se;
         this.isSelected = false;
-        this.targetPosition = null;
     },
     beginShow: function($super) {
         $super();
         if(this.isHidePoker) this.setBGImage(ResourceData.Images.BeiMian);
         else this.setBGImage(this.imageData);
-
-        // 如果存在目标坐标，则每一帧平滑移动逼近它
-        if (this.targetPosition) {
-            var dx = this.targetPosition.x - this.relativePosition.x;
-            var dy = this.targetPosition.y - this.relativePosition.y;
-            if (Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5) {
-                this.relativePosition.x += dx * 0.3; // 控制系数(0-1)越大越快
-                this.relativePosition.y += dy * 0.3;
-            } else {
-                this.relativePosition.x = this.targetPosition.x;
-                this.relativePosition.y = this.targetPosition.y;
-            }
-        }
     },
     onClick: function() {
         if(this.parent.toSelectPoker){
@@ -819,18 +802,9 @@ GControls.PokerPanel = Class.create(JControls.Object, {
                 x = (this.size.width - w) / 2.0 + i * this.density;
                 if(this.toSelectPoker && GMain.Poker[this.pokerPanelNum][i].isSelected) y = -20;
             }
-            
-            var p = GMain.Poker[this.pokerPanelNum][i];
-            
-            // 初次登场无缓动直接就位
-            if (!p.targetPosition && p.relativePosition.x === 0 && p.relativePosition.y === 0) {
-                p.setRelativePosition({x: x, y: y});
-            }
-            // 设定每帧趋向的目标，配合 Poker.beginShow 完成完美滑出
-            p.targetPosition = {x: x, y: y};
-            
-            if(this.hidePoker) p.isHidePoker = true;
-            else p.isHidePoker = false;
+            GMain.Poker[this.pokerPanelNum][i].setRelativePosition({x: x, y: y});
+            if(this.hidePoker) GMain.Poker[this.pokerPanelNum][i].isHidePoker = true;
+            else GMain.Poker[this.pokerPanelNum][i].isHidePoker = false;
         }
         this.clearControls();
         this.addControlInLast(GMain.Poker[this.pokerPanelNum]);
@@ -858,7 +832,7 @@ GControls.PokerPanel = Class.create(JControls.Object, {
         $super();
         function sortNumber(a, b){
             if(b.pokerNumber == a.pokerNumber) return b.seNumber - a.seNumber;
-            else return pokerValueMap[b.pokerNumber] - pokerValueMap[a.pokerNumber];
+            else return b.pokerNumber - a.pokerNumber;
         }
     }
 });
