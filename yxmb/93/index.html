@@ -251,7 +251,7 @@
             object-fit: cover;
         }
         
-        /* 迪克样式 - 抽象CSS绘制 */
+        /* 迪克样式 */
         .dick {
             position: absolute;
             width: 0;
@@ -935,7 +935,7 @@
                         <div class="status-label">当前得分</div>
                     </div>
                     <div class="status-item">
-                        <div class="status-value" id="questionCount">1/5</div>
+                        <div class="status-value" id="questionCount">1/15</div>
                         <div class="status-label">题目进度</div>
                     </div>
                 </div>
@@ -947,8 +947,6 @@
         document.addEventListener('DOMContentLoaded', function() {
             // 显示加载层
             const loadingOverlay = document.getElementById('loadingOverlay');
-            
-            // 模拟加载过程
             setTimeout(() => {
                 loadingOverlay.style.display = 'none';
             }, 2000);
@@ -967,10 +965,26 @@
             const backBtn2 = document.getElementById('backBtn2');
             const cheatBtn = document.getElementById('cheatBtn');
             
+            // 定时器存储对象（防止后台幽灵循环调用）
+            let activeTimers = {
+                teacherLoop: null,
+                cheatWindow: null,
+                elbowInterval: null,
+                resetDelay: null
+            };
+
+            function clearAllTimers() {
+                if(activeTimers.teacherLoop) clearTimeout(activeTimers.teacherLoop);
+                if(activeTimers.cheatWindow) clearTimeout(activeTimers.cheatWindow);
+                if(activeTimers.elbowInterval) clearInterval(activeTimers.elbowInterval);
+                if(activeTimers.resetDelay) clearTimeout(activeTimers.resetDelay);
+            }
+
             // 切换到老师模式
             teacherRoleBtn.addEventListener('click', function() {
                 startScreen.classList.remove('active');
                 teacherScreen.classList.add('active');
+                resetTeacherGame();
             });
             
             // 切换到学生模式
@@ -990,64 +1004,100 @@
             backBtn2.addEventListener('click', function() {
                 studentScreen.classList.remove('active');
                 startScreen.classList.add('active');
+                clearAllTimers();
             });
             
-            // 高考英语难题库
+            // 扩充后的高考英语难题库（总共 15 题）
             const englishQuestions = [
                 {
                     question: "The novel, ______ is set in 19th-century London, explores themes of social inequality and human resilience. What makes it particularly compelling is the author's use of multiple narrative perspectives, ______ allows readers to experience events from different viewpoints.",
-                    options: {
-                        A: "that; which",
-                        B: "which; that",
-                        C: "which; which",
-                        D: "that; that"
-                    },
+                    options: { A: "that; which", B: "which; that", C: "which; which", D: "that; that" },
                     answer: "C",
                     explanation: "fvv。"
                 },
                 {
                     question: "Had the government taken preventive measures earlier, the economic crisis ______ avoided. However, the prevailing sentiment at the time was that such measures ______ unnecessary, a miscalculation that proved costly.",
-                    options: {
-                        A: "could be; were",
-                        B: "could have been; were",
-                        C: "might be; would be",
-                        D: "should have been; had been"
-                    },
+                    options: { A: "could be; were", B: "could have been; were", C: "might be; would be", D: "should have been; had been" },
                     answer: "B",
                     explanation: "dick。"
                 },
                 {
                     question: "Not until ______ the complex algorithm ______ appreciate the elegance of its design. It was then that I realized how years of research ______ into this breakthrough.",
-                    options: {
-                        A: "had I implemented; did I; had gone",
-                        B: "I implemented; I did; went",
-                        C: "did I implement; I did; had gone",
-                        D: "I had implemented; did I; had gone"
-                    },
+                    options: { A: "had I implemented; did I; had gone", B: "I implemented; I did; went", C: "did I implement; I did; had gone", D: "I had implemented; did I; had gone" },
                     answer: "D",
                     explanation: "penis。"
                 },
                 {
                     question: "The symposium, ______ attendees from over thirty countries, ______ considerable media attention despite its organizer's initial apprehension ______ it might be overshadowed by concurrent events.",
-                    options: {
-                        A: "drawing; attracted; that",
-                        B: "drawn; attracting; which",
-                        C: "having drawn; attracted; that",
-                        D: "to draw; attracting; which"
-                    },
+                    options: { A: "drawing; attracted; that", B: "drawn; attracting; which", C: "having drawn; attracted; that", D: "to draw; attracting; which" },
                     answer: "A",
                     explanation: "jiba。"
                 },
                 {
                     question: "______ the controversial legislation passed by a narrow margin, its implementation ______ delayed pending judicial review. Many legal experts contend that such reviews ______ essential for maintaining constitutional integrity.",
-                    options: {
-                        A: "Despite; has been; are",
-                        B: "Although; was; is",
-                        C: "While; had been; was",
-                        D: "Whereas; has been; is"
-                    },
+                    options: { A: "Despite; has been; are", B: "Although; was; is", C: "While; had been; was", D: "Whereas; has been; is" },
                     answer: "A",
                     explanation: "Dajiba。"
+                },
+                {
+                    question: "The newly appointed CEO proposed that the corporate structure ______ immediately, a decision ______ generated mixed reactions among the board members.",
+                    options: { A: "be modified; which", B: "must be modified; that", B: "modified; who", D: "was modified; which" },
+                    answer: "A",
+                    explanation: "guba。"
+                },
+                {
+                    question: "______ with the challenging task of restructuring the entire department, the manager decided to consult with external experts before ______ any major changes.",
+                    options: { A: "Facing; making", B: "Faced; making", C: "Having faced; to make", D: "To face; made" },
+                    answer: "B",
+                    explanation: "chufen。"
+                },
+                {
+                    question: "The ancient ruins, ______ by archaeologists last year, are believed ______ back to the Han Dynasty, providing invaluable insights into early trade routes.",
+                    options: { A: "discovered; dating", B: "discovering; to date", C: "discovered; to date", D: "having discovered; dated" },
+                    answer: "C",
+                    explanation: "maba。"
+                },
+                {
+                    question: "Rarely ______ such a spectacular display of Northern Lights in this region, which left all the observers utterly ______.",
+                    options: { A: "we had witnessed; amazed", B: "had we witnessed; amazing", C: "had we witnessed; amazed", D: "did we witness; amazing" },
+                    answer: "C",
+                    explanation: "niubi。"
+                },
+                {
+                    question: "He was so engrossed in his laboratory experiment ______ he completely lost track of time, ______ his family to worry about his sudden disappearance.",
+                    options: { A: "that; causing", B: "which; caused", C: "that; to cause", D: "as; causing" },
+                    answer: "A",
+                    explanation: "saoqi。"
+                },
+                {
+                    question: "The committee requested that every member ______ their report by Friday afternoon, ______ no exceptions would be made for late submissions.",
+                    options: { A: "submit; adding that", B: "submits; added that", C: "should submit; to add that", D: "submitted; adding which" },
+                    answer: "A",
+                    explanation: "langdan。"
+                },
+                {
+                    question: "With all the preparations ______ well ahead of schedule, the team felt confident ______ the international championship.",
+                    options: { A: "completed; of winning", B: "completing; to win", C: "having completed; in winning", D: "to be completed; about winning" },
+                    answer: "A",
+                    explanation: "daqiang。"
+                },
+                {
+                    question: "It was in the small library room ______ they first met ______ they discovered their shared passion for ancient theoretical physics.",
+                    options: { A: "where; that", B: "that; where", C: "which; that", D: "where; which" },
+                    answer: "A",
+                    explanation: "kaoju。"
+                },
+                {
+                    question: "The global market fluctuates rapidly; ______ you adapt your business strategies to these changes, you will face the risk of ______ behind.",
+                    options: { A: "unless; falling", B: "if; falling", C: "provided that; to fall", D: "lest; fallen" },
+                    answer: "A",
+                    explanation: "pipi。"
+                },
+                {
+                    question: "So intensive ______ the training program designed by the coach that few athletes could endure it without ______ exhaustion after the first week.",
+                    options: { A: "was; experiencing", B: "did; experiencing", C: "had; to experience", D: "was; experienced" },
+                    answer: "A",
+                    explanation: "jueju。"
                 }
             ];
             
@@ -1065,7 +1115,7 @@
                 document.getElementById('cheatBtn').style.display = 'block';
                 document.getElementById('answerResult').textContent = '';
                 document.getElementById('scoreValue').textContent = score;
-                document.getElementById('questionCount').textContent = "1/5";
+                document.getElementById('questionCount').textContent = `1/${englishQuestions.length}`;
                 cheatGameContainer.style.display = 'none';
                 testContainer.style.display = 'block';
                 loadQuestion();
@@ -1088,8 +1138,8 @@
                     optionsContainer.appendChild(optionElement);
                 }
                 
-                document.getElementById('studentMessage').textContent = `帮助迪克林强作弊 ${currentQuestionIndex + 1}/5`;
-                document.getElementById('questionCount').textContent = `${currentQuestionIndex + 1}/5`;
+                document.getElementById('studentMessage').textContent = `帮助迪克林强作弊 ${currentQuestionIndex + 1}/${englishQuestions.length}`;
+                document.getElementById('questionCount').textContent = `${currentQuestionIndex + 1}/${englishQuestions.length}`;
             }
             
             // 选择答案
@@ -1100,12 +1150,10 @@
                 const correctAnswer = englishQuestions[currentQuestionIndex].answer;
                 const explanation = englishQuestions[currentQuestionIndex].explanation;
                 
-                // 移除之前的选择
                 document.querySelectorAll('.option').forEach(opt => {
                     opt.classList.remove('correct', 'incorrect');
                 });
                 
-                // 显示结果
                 if (selectedOption === correctAnswer) {
                     e.target.classList.add('correct');
                     document.getElementById('answerResult').innerHTML = "回答正确！<br>" + explanation;
@@ -1114,13 +1162,11 @@
                     document.getElementById('scoreValue').textContent = score;
                 } else {
                     e.target.classList.add('incorrect');
-                    // 显示正确答案
                     document.querySelector(`.option[data-option="${correctAnswer}"]`).classList.add('correct');
                     document.getElementById('answerResult').innerHTML = `回答错误！正确答案是: ${correctAnswer}<br>${explanation}`;
                     document.getElementById('answerResult').style.color = "#e74c3c";
                 }
                 
-                // 禁用选项
                 document.querySelectorAll('.option').forEach(opt => {
                     opt.style.pointerEvents = 'none';
                 });
@@ -1134,7 +1180,7 @@
                 
                 currentQuestionIndex++;
                 
-                if (currentQuestionIndex < 5) {
+                if (currentQuestionIndex < englishQuestions.length) {
                     testFinished = false;
                     document.querySelectorAll('.option').forEach(opt => {
                         opt.style.pointerEvents = 'auto';
@@ -1148,19 +1194,19 @@
                     document.getElementById('options').innerHTML = '';
                     document.getElementById('nextQuestionBtn').style.display = 'none';
                     document.getElementById('cheatBtn').style.display = 'none';
-                    document.getElementById('studentMessage').textContent = `考试结束！你的得分: ${score}/5`;
+                    document.getElementById('studentMessage').textContent = `考试结束！你的得分: ${score}/${englishQuestions.length}`;
                     
-                    if (score >= 3) {
-                        document.getElementById('answerResult').textContent = "恭喜你抄爽了！";
+                    if (score >= Math.ceil(englishQuestions.length / 2)) {
+                        document.getElementById('answerResult').textContent = "恭喜你抄爽了！成功的保住了绿卡！";
                         document.getElementById('answerResult').style.color = "#2ecc71";
                     } else {
-                        document.getElementById('answerResult').textContent = "很遗憾，你没抄爽。";
+                        document.getElementById('answerResult').textContent = "很遗憾，你没抄爽，准备去复读吧。";
                         document.getElementById('answerResult').style.color = "#e74c3c";
                     }
                 }
             });
             
-            // 作弊按钮 - 显示肘击小游戏
+            // 作弊按钮
             cheatBtn.addEventListener('click', function() {
                 testContainer.style.display = 'none';
                 cheatGameContainer.style.display = 'block';
@@ -1169,16 +1215,17 @@
             
             // 肘击小游戏变量
             let clickCount = 0;
-            let timeLeft = 1.0; // 1秒时间限制
-            let timer = null;
+            let timeLeft = 1.0; 
             let gameActive = false;
             let cheatSuccess = false;
             let teacherWarningVisible = false;
-            let requiredClicks = 15; // 1秒内需要点击15次
+            let requiredClicks = 15; 
             
-            // 开始肘击小游戏
+            // 绑定肘击核心点击事件（全局单次绑定，解决多倍增长Bug）
+            const elbowTarget = document.getElementById('elbowTarget');
+            elbowTarget.addEventListener('click', handleElbowClick);
+
             function startCheatGame() {
-                // 重置游戏状态
                 clickCount = 0;
                 timeLeft = 1.0;
                 gameActive = true;
@@ -1191,35 +1238,27 @@
                 document.getElementById('cheatMessage').textContent = "快速肘击林强！1秒内点击15次传递纸条！";
                 document.getElementById('teacherWarning').style.display = 'none';
                 
-                // 添加点击事件
-                const elbowTarget = document.getElementById('elbowTarget');
-                elbowTarget.addEventListener('click', handleElbowClick);
-                
-                // 开始计时
-                timer = setInterval(updateGame, 100);
+                if(activeTimers.elbowInterval) clearInterval(activeTimers.elbowInterval);
+                activeTimers.elbowInterval = setInterval(updateGame, 100);
             }
             
-            // 处理肘击点击
             function handleElbowClick() {
                 if (!gameActive) return;
                 
                 clickCount++;
                 document.getElementById('clickCount').textContent = clickCount;
                 
-                // 显示击中效果
                 const hitEffect = document.getElementById('hitEffect');
                 hitEffect.style.opacity = '0.8';
                 hitEffect.classList.remove('hit-animation');
-                void hitEffect.offsetWidth; // 触发重绘
+                void hitEffect.offsetWidth; 
                 hitEffect.classList.add('hit-animation');
                 
-                // 随机显示老师警告
                 if (!teacherWarningVisible && Math.random() > 0.7) {
                     showTeacherWarning();
                 }
             }
             
-            // 显示老师警告
             function showTeacherWarning() {
                 teacherWarningVisible = true;
                 const warning = document.getElementById('teacherWarning');
@@ -1234,26 +1273,23 @@
                 }, 1000);
             }
             
-            // 更新游戏状态
             function updateGame() {
                 if (!gameActive) return;
                 
                 timeLeft -= 0.1;
                 document.getElementById('timeLeft').textContent = timeLeft.toFixed(1);
                 
-                // 检查是否超时
                 if (timeLeft <= 0) {
-                    clearInterval(timer);
+                    clearInterval(activeTimers.elbowInterval);
                     gameActive = false;
                     
                     if (clickCount >= requiredClicks) {
-                        // 作弊成功
                         document.getElementById('cheatMessage').textContent = "成功！纸条已传给柯基！";
                         cheatSuccess = true;
                         setTimeout(endCheatGame, 1500);
                     } else {
-                        // 作弊失败
                         document.getElementById('cheatMessage').textContent = "肘击次数不足！被监考老师发现了！";
+                        cheatSuccess = false;
                         setTimeout(() => {
                             document.getElementById('cheatMessage').textContent += " 召唤卡车中...";
                             setTimeout(endCheatGame, 1500);
@@ -1262,27 +1298,23 @@
                 }
             }
             
-            // 结束肘击小游戏
             function endCheatGame() {
-                // 移除点击事件
-                const elbowTarget = document.getElementById('elbowTarget');
-                elbowTarget.removeEventListener('click', handleElbowClick);
-                
-                if (cheatSuccess) {
-                    // 作弊成功，获得答案
-                    const correctAnswer = englishQuestions[currentQuestionIndex].answer;
-                    document.querySelector(`.option[data-option="${correctAnswer}"]`).classList.add('correct');
-                    document.getElementById('answerResult').innerHTML = "作弊成功！你收到了柯基的答案。<br>" + englishQuestions[currentQuestionIndex].explanation;
-                    document.getElementById('answerResult').style.color = "#f39c12";
-                    score++;
-                    document.getElementById('scoreValue').textContent = score;
-                }
-                
-                // 回到测试界面
                 cheatGameContainer.style.display = 'none';
                 testContainer.style.display = 'block';
                 
-                // 禁用选项
+                if (cheatSuccess) {
+                    const correctAnswer = englishQuestions[currentQuestionIndex].answer;
+                    document.querySelector(`.option[data-option="${correctAnswer}"]`).classList.add('correct');
+                    document.getElementById('answerResult').innerHTML = "作弊成功！你收到了柯基送来的正确答案。<br>" + englishQuestions[currentQuestionIndex].explanation;
+                    document.getElementById('answerResult').style.color = "#f39c12";
+                    score++;
+                    document.getElementById('scoreValue').textContent = score;
+                } else {
+                    // 修复：失败时应该有明显的零分标记和惩罚
+                    document.getElementById('answerResult').innerHTML = "作弊失败！被监考老师当场抓获，本题计0分！";
+                    document.getElementById('answerResult').style.color = "#e74c3c";
+                }
+                
                 document.querySelectorAll('.option').forEach(opt => {
                     opt.style.pointerEvents = 'none';
                 });
@@ -1290,15 +1322,13 @@
                 testFinished = true;
             }
             
-            // 再试一次按钮
             document.getElementById('retryBtn').addEventListener('click', function() {
-                clearInterval(timer);
+                clearInterval(activeTimers.elbowInterval);
                 startCheatGame();
             });
             
-            // 取消作弊按钮
             document.getElementById('cancelCheatBtn').addEventListener('click', function() {
-                clearInterval(timer);
+                clearInterval(activeTimers.elbowInterval);
                 cheatGameContainer.style.display = 'none';
                 testContainer.style.display = 'block';
             });
@@ -1320,19 +1350,16 @@
             const electrocuteOverlay = document.getElementById('electrocuteOverlay');
             const classTeacher = document.getElementById('classTeacher');
             
-            // 老师游戏状态
             let teacherGameActive = false;
             let cheatingInProgress = false;
             let cheatSuccessCount = 0;
             let cheatFailCount = 0;
             
-            // 更新作弊次数显示
             function updateCheatCount() {
                 document.getElementById('successCount').textContent = cheatSuccessCount;
                 document.getElementById('failCount').textContent = cheatFailCount;
             }
             
-            // 开始监控
             startCheatBtn.addEventListener('click', function() {
                 if (teacherGameActive) return;
                 
@@ -1340,18 +1367,15 @@
                 message.textContent = "监控中... 注意林强的行为！";
                 startCheatBtn.disabled = true;
                 
-                // 更频繁地开始作弊（1秒内）
-                setTimeout(startCheating, Math.floor(Math.random() * 1000) + 500);
+                activeTimers.teacherLoop = setTimeout(startCheating, Math.floor(Math.random() * 1000) + 500);
             });
             
-            // 开始作弊 - 迪克伸向KSY
             function startCheating() {
                 if (!teacherGameActive) return;
                 
                 cheatingInProgress = true;
                 message.textContent = "警告！林强正在尝试作弊！";
                 
-                // 重置迪克位置
                 dick.style.width = '0px';
                 dick.style.height = '6px';
                 dick.style.bottom = '-20px';
@@ -1360,47 +1384,40 @@
                 dick.style.display = 'block';
                 dickHead.style.display = 'none';
                 
-                // 迪克伸长动画 - 朝向KSY (学生4位置)
                 setTimeout(() => {
-                    // 计算KSY的位置（学生4在400px处）
                     const ksydesk = document.querySelector('.desk-4');
                     const ksydeskRect = ksydesk.getBoundingClientRect();
                     const linqiangRect = linqiang.getBoundingClientRect();
                     
-                    // 计算距离和角度
                     const dx = ksydeskRect.left - linqiangRect.left;
                     const dy = ksydeskRect.top - linqiangRect.top;
                     const distance = Math.sqrt(dx * dx + dy * dy);
                     const angle = Math.atan2(dy, dx) * 180 / Math.PI;
                     
-                    // 调整迪克位置和方向
                     dick.style.width = distance + 'px';
                     dick.style.transform = `rotate(${angle}deg)`;
                     dick.style.transformOrigin = 'left center';
-                    dick.style.left = '30px'; // 从林强身体中间开始
-                    dick.style.bottom = '40px'; // 调整垂直位置
+                    dick.style.left = '30px'; 
+                    dick.style.bottom = '40px'; 
                     dickHead.style.display = 'block';
-                }, 300); // 更快的伸长动画
+                }, 300); 
                 
-                // 1.5秒后如果没被阻止，作弊成功（更短的作弊时间）
-                setTimeout(() => {
+                activeTimers.cheatWindow = setTimeout(() => {
                     if (cheatingInProgress) {
                         cheatingInProgress = false;
                         message.textContent = "糟糕！林强作弊成功，纸条已用迪克递给柯基！";
                         cheatSuccessCount++;
                         updateCheatCount();
                         
-                        // 检查是否达到3次成功
                         if (cheatSuccessCount >= 3) {
                             electrocuteTeacher();
                         } else {
                             resetCheating();
                         }
                     }
-                }, 1500); // 更短的作弊时间窗口
+                }, 1500); 
             }
             
-            // 召唤卡车
             truckBtn.addEventListener('click', function() {
                 if (!teacherGameActive || !cheatingInProgress) {
                     message.textContent = "现在不能召唤卡车！等作弊发生时再试。";
@@ -1408,50 +1425,42 @@
                 }
                 
                 cheatingInProgress = false;
+                if(activeTimers.cheatWindow) clearTimeout(activeTimers.cheatWindow);
+
                 message.textContent = "卡车出击！迪克压断中...";
                 cheatFailCount++;
                 updateCheatCount();
                 
-                // 检查是否达到3次失败
                 if (cheatFailCount >= 3) {
                     executeLinqiang();
                     return;
                 }
                 
-                // 显示卡车
                 truck.style.width = '150px';
                 
-                // 卡车移动动画
                 setTimeout(() => {
                     truck.style.transform = 'translateX(600px)';
                     
-                    // 卡车压到迪克时的效果
                     setTimeout(() => {
-                        // 迪克断裂效果
-                        dick.style.width = '150px'; // 缩短迪克
+                        dick.style.width = '150px'; 
                         dickHead.style.display = 'none';
                         
-                        // 喷血效果
                         showBlood(linqiang.offsetLeft + 30, linqiang.offsetTop + 150);
                         showBlood(linqiang.offsetLeft + 20, linqiang.offsetTop + 130);
                         showBlood(linqiang.offsetLeft + 40, linqiang.offsetTop + 140);
                         
-                        // 林强震动
                         linqiang.classList.add('vibrate');
-                        
                         message.textContent = "成功！林强的迪克被卡车压断，作弊阻止！";
                         
-                        // 重置
-                        setTimeout(resetCheating, 1500); // 更快的重置
-                    }, 600); // 更快的动画
+                        resetCheating();
+                    }, 600); 
                 }, 100);
             });
             
-            // 电死监考老师 - 完整动画（迪克伸长后放电）
             function electrocuteTeacher() {
+                teacherGameActive = false; // 结束游戏循环
                 message.textContent = "林强作弊成功3次！迪克放电中...";
                 
-                // 重置迪克位置
                 dick.style.width = '0px';
                 dick.style.height = '6px';
                 dick.style.bottom = '-20px';
@@ -1460,37 +1469,27 @@
                 dick.style.display = 'block';
                 dickHead.style.display = 'none';
                 
-                // 迪克伸长动画 - 朝向监考老师
                 setTimeout(() => {
-                    // 计算老师的位置
                     const teacherRect = classTeacher.getBoundingClientRect();
                     const linqiangRect = linqiang.getBoundingClientRect();
                     
-                    // 计算距离和角度
                     const dx = teacherRect.left - linqiangRect.left;
                     const dy = teacherRect.top - linqiangRect.top;
                     const distance = Math.sqrt(dx * dx + dy * dy);
                     const angle = Math.atan2(dy, dx) * 180 / Math.PI;
                     
-                    // 调整迪克位置和方向
                     dick.style.width = distance + 'px';
                     dick.style.transform = `rotate(${angle}deg)`;
                     dick.style.transformOrigin = 'left center';
-                    dick.style.left = '30px'; // 从林强身体中间开始
-                    dick.style.bottom = '40px'; // 调整垂直位置
+                    dick.style.left = '30px'; 
+                    dick.style.bottom = '40px'; 
                     dickHead.style.display = 'block';
                     
-                    // 显示电击覆盖层
                     electrocuteOverlay.style.display = 'block';
-                    
-                    // 林强震动
                     linqiang.classList.add('vibrate');
-                    
-                    // 老师震动
                     classTeacher.classList.add('vibrate');
                     classTeacher.style.background = "#00f7ff";
                     
-                    // 显示放电效果（从龟头到老师）
                     setTimeout(() => {
                         showLightning(
                             linqiang.offsetLeft + 30 + distance * Math.cos(angle * Math.PI/180), 
@@ -1504,15 +1503,8 @@
                             classTeacher.offsetLeft + 20, 
                             classTeacher.offsetTop + 20
                         );
-                        showLightning(
-                            linqiang.offsetLeft + 30 + distance * Math.cos(angle * Math.PI/180), 
-                            linqiang.offsetTop + 40 + distance * Math.sin(angle * Math.PI/180), 
-                            classTeacher.offsetLeft + 10, 
-                            classTeacher.offsetTop + 10
-                        );
                     }, 300);
                     
-                    // 老师被电焦效果
                     setTimeout(() => {
                         classTeacher.style.background = "#2c3e50";
                         classTeacher.style.boxShadow = "0 0 20px #000";
@@ -1520,66 +1512,53 @@
                     
                     setTimeout(() => {
                         message.textContent = "监考老师被林强的迪克电死了！游戏结束。";
-                        setTimeout(() => {
-                            resetTeacherGame();
-                        }, 2000);
+                        activeTimers.resetDelay = setTimeout(resetTeacherGame, 3000);
                     }, 1500);
                 }, 300);
             }
             
-            // 处决林强
             function executeLinqiang() {
+                teacherGameActive = false; // 结束游戏循环
                 message.textContent = "林强被抓3次作弊！卡车处决中...";
-                
-                // 显示卡车
                 truck.style.width = '150px';
                 
-                // 卡车移动动画
                 setTimeout(() => {
                     truck.style.transform = 'translateX(600px)';
                     
-                    // 卡车压到林强时的效果
                     setTimeout(() => {
-                        // 隐藏林强
                         linqiang.style.display = 'none';
                         
-                        // 喷血效果
                         showBlood(linqiang.offsetLeft + 30, linqiang.offsetTop + 150);
                         showBlood(linqiang.offsetLeft + 20, linqiang.offsetTop + 130);
                         showBlood(linqiang.offsetLeft + 40, linqiang.offsetTop + 140);
                         showBlood(linqiang.offsetLeft + 10, linqiang.offsetTop + 120);
-                        showBlood(linqiang.offsetLeft + 50, linqiang.offsetTop + 160);
                         
-                        message.textContent = "林强被卡车处决了！游戏结束。";
-                        
-                        setTimeout(resetTeacherGame, 2000); // 更快的重置
-                    }, 600); // 更快的动画
+                        message.textContent = "林强被卡车彻底处决了！游戏结束。";
+                        activeTimers.resetDelay = setTimeout(resetTeacherGame, 3000);
+                    }, 600); 
                 }, 100);
             }
             
-            // 显示血液效果
             function showBlood(x, y) {
                 const bloods = [blood1, blood2, blood3];
                 for (let i = 0; i < bloods.length; i++) {
-                    if (bloods[i].style.display === 'none') {
+                    if (bloods[i].style.display === 'none' || !bloods[i].style.display) {
                         bloods[i].style.left = x + 'px';
                         bloods[i].style.top = y + 'px';
                         bloods[i].style.display = 'block';
                         
                         setTimeout(() => {
                             bloods[i].style.display = 'none';
-                        }, 800); // 更快的消失
+                        }, 800); 
                         break;
                     }
                 }
             }
             
-            // 显示放电效果
             function showLightning(startX, startY, endX, endY) {
                 const lightnings = [lightning1, lightning2, lightning3];
                 for (let i = 0; i < lightnings.length; i++) {
-                    if (lightnings[i].style.display === 'none') {
-                        // 计算闪电长度和角度
+                    if (lightnings[i].style.display === 'none' || !lightnings[i].style.display) {
                         const dx = endX - startX;
                         const dy = endY - startY;
                         const length = Math.sqrt(dx * dx + dy * dy);
@@ -1597,15 +1576,16 @@
                         setTimeout(() => {
                             lightnings[i].style.display = 'none';
                             lightnings[i].classList.remove('electric');
-                        }, 300); // 更快的消失
+                        }, 300); 
                         break;
                     }
                 }
             }
             
-            // 重置作弊状态
             function resetCheating() {
-                setTimeout(() => {
+                if(activeTimers.resetDelay) clearTimeout(activeTimers.resetDelay);
+                
+                activeTimers.resetDelay = setTimeout(() => {
                     dick.style.display = 'none';
                     dick.style.width = '0px';
                     dickHead.style.display = 'none';
@@ -1613,23 +1593,18 @@
                     truck.style.transform = 'translateX(0)';
                     linqiang.classList.remove('vibrate');
                     
-                    teacherGameActive = false;
                     cheatingInProgress = false;
                     
-                    startCheatBtn.disabled = false;
-                    
-                    // 随机时间后可能再次作弊（更频繁）
-                    message.textContent = "监控中... 注意林强的行为！";
-                    setTimeout(() => {
-                        if (Math.random() > 0.1) { // 90%的概率再次作弊
-                            startCheating();
-                        }
-                    }, 500); // 更短的等待时间（0.5秒）
+                    if (teacherGameActive) {
+                        message.textContent = "监控中... 注意林强的行为！";
+                        activeTimers.teacherLoop = setTimeout(startCheating, Math.floor(Math.random() * 1000) + 1000);
+                    }
                 }, 1000);
             }
             
-            // 重置老师游戏
             function resetTeacherGame() {
+                clearAllTimers();
+                
                 dick.style.display = 'none';
                 dick.style.width = '0px';
                 dickHead.style.display = 'none';
@@ -1649,7 +1624,7 @@
                 updateCheatCount();
                 
                 startCheatBtn.disabled = false;
-                message.textContent = "监考正在进行中... 注意观察学生行为！";
+                message.textContent = "期末考正在进行中... 注意观察林强行为！";
                 
                 blood1.style.display = 'none';
                 blood2.style.display = 'none';
