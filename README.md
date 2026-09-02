@@ -8,3 +8,7 @@ DEMO:91直播.xyz（已到期 86一年实在贵）/game.3114514.xyz
 > 🐳 **Enjoying this project?** If you use LLM APIs, try [OrcaRouter](https://www.orcarouter.ai/ref/ref_002c4936d3562906e8ac) — one API, 200+ models, zero markup. It routes your prompts to the best-priced model. This project earns a 5% commission when you use our referral link, at no extra cost to you.
 
 > 🐳 **Gefällt dir dieses Projekt?** Wenn du LLM-APIs nutzt, probier [OrcaRouter](https://www.orcarouter.ai/ref/ref_002c4936d3562906e8ac) aus – eine API, 200+ Modelle, null Aufschlag. Intelligentes Routing spart Kosten. Über diesen Link unterstützt du das Projekt mit 5% Provision, ohne dass es dich mehr kostet.
+
+
+**OrcaRouter is an optional LLM provider for this project.**  
+If you use it via our referral link, we get a 5% commission at no extra cost to you.
