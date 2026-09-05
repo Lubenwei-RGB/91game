@@ -24,17 +24,17 @@ export class Player extends AcGameObject {
 
         this.speedx = 400;//水平速度，每秒钟移动多少像素
         this.speedy = -1000;//跳起的初始速度,向上跳，方向为负的
-        
+
         //重力，可以使人物下落
         this.gravity = 50;
 
         this.ctx = this.root.game_map.ctx;//引入地图中的ctx
-        
+
         this.pressed_keys = this.root.game_map.controller.pressed_keys;
 
         this.status = 3;
         //状态机，0：idle(静止)，1：向前，2：向后，3：跳跃，4：攻击，5：被打，6:死亡
-    
+
         //将每个状态的动作存入数组中
         this.animations = new Map();
 
@@ -44,10 +44,110 @@ export class Player extends AcGameObject {
         this.hp = 100;
         this.$hp = this.root.$kof.find(`.kof-head-hp-${this.id}>div`);
         this.$hp_div = this.$hp.find('div');
+
+        //是否由 AI 控制，以及 AI 参数初始化
+        this.is_ai = info.is_ai || false;
+        if (this.is_ai) {
+            this.init_ai(info.difficulty || 'normal');
+        }
     }
 
     start() {
 
+    }
+
+    // ---------------- AI 初始化 ----------------
+    init_ai(difficulty) {
+        // 不同难度的行为参数
+        // react       : 重新决策的间隔(ms)，越小反应越快
+        // aggression  : 进入攻击范围后主动出拳的概率
+        // attack_range: 出拳判定的距离阈值
+        // jump_chance : 靠近时起跳突进的概率
+        // dodge       : 对手出拳时闪避/后撤的概率
+        const presets = {
+            easy:   { react: 380, aggression: 0.40, attack_range: 150, jump_chance: 0.05, dodge: 0.15 },
+            normal: { react: 210, aggression: 0.62, attack_range: 165, jump_chance: 0.10, dodge: 0.40 },
+            hard:   { react: 95,  aggression: 0.80, attack_range: 178, jump_chance: 0.16, dodge: 0.70 },
+        };
+        const p = presets[difficulty] || presets.normal;
+
+        this.ai_react_time = p.react;
+        this.ai_aggression = p.aggression;
+        this.ai_attack_range = p.attack_range;
+        this.ai_jump_chance = p.jump_chance;
+        this.ai_dodge = p.dodge;
+
+        // 当前缓存的决策，逐帧沿用直到下一次重新决策
+        this.ai_decision = { move: 0, jump: false, attack: false };
+        this.ai_think_timer = 0; // 距离下次决策的剩余时间
+    }
+
+    // AI 决策：根据与对手的相对位置更新 ai_decision
+    ai_decide() {
+        let you = this.root.players[1 - this.id];
+        if (!you) return;
+
+        // 对手已倒地或时间结束，停止行动
+        if (you.status === 6 || this.status === 6) {
+            this.ai_decision = { move: 0, jump: false, attack: false };
+            return;
+        }
+
+        let dist = you.x - this.x;          // >0 对手在右，<0 对手在左
+        let adist = Math.abs(dist);
+        let dir = dist > 0 ? 1 : -1;        // 朝向对手的移动方向
+        let dec = { move: 0, jump: false, attack: false };
+
+        if (adist <= this.ai_attack_range) {
+            // 已进入攻击范围
+            let r = Math.random();
+            if (r < this.ai_aggression) {
+                dec.attack = true;            // 出拳
+            } else if (r < this.ai_aggression + 0.18) {
+                dec.move = -dir;              // 拉开距离
+            } else {
+                dec.move = 0;                 // 原地观望
+            }
+        } else {
+            // 距离较远，靠近对手
+            dec.move = dir;
+            if (Math.random() < this.ai_jump_chance) {
+                dec.jump = true;              // 起跳突进
+            }
+        }
+
+        // 对手正在出拳且距离很近时，按闪避概率选择后撤或跳开
+        if (you.status === 4 && adist < this.ai_attack_range + 70) {
+            if (Math.random() < this.ai_dodge) {
+                dec.attack = false;
+                if (Math.random() < 0.5) {
+                    dec.jump = true;          // 跳起躲避
+                } else {
+                    dec.move = -dir;          // 后撤躲避
+                }
+            }
+        }
+
+        this.ai_decision = dec;
+    }
+
+    // 把 AI 决策翻译成与人类相同的按键语义
+    ai_control() {
+        // 按反应时间间隔重新决策，避免每帧抖动
+        this.ai_think_timer -= this.timedelta;
+        if (this.ai_think_timer <= 0) {
+            // 加入随机抖动，让节奏更自然
+            this.ai_think_timer = this.ai_react_time * (0.6 + Math.random() * 0.8);
+            this.ai_decide();
+        }
+
+        let w = false, a = false, d = false, space = false;
+        if (this.ai_decision.move > 0) d = true;
+        else if (this.ai_decision.move < 0) a = true;
+        if (this.ai_decision.jump) w = true;
+        if (this.ai_decision.attack) space = true;
+
+        return { w, a, d, space };
     }
 
     update_move(){//移动
@@ -101,7 +201,10 @@ export class Player extends AcGameObject {
 
     update_control() {
         let w,a,d,space;
-        if(this.id === 0) {
+        if(this.is_ai) {
+            // AI 控制的玩家：由决策生成虚拟按键
+            ({w, a, d, space} = this.ai_control());
+        } else if(this.id === 0) {
             w = this.pressed_keys.has('w');
             a = this.pressed_keys.has('a');
             d = this.pressed_keys.has('d');
@@ -226,7 +329,7 @@ export class Player extends AcGameObject {
             if(this.is_collision(r1,r2)) {
                 you.is_attack();
             }
-            
+
         }
 
     }
@@ -258,7 +361,7 @@ export class Player extends AcGameObject {
         //     //对称
         //     this.ctx.fillRect(this.x + this.width -  120 - 100,this.y + 40,100,20);
         // }
-        
+
         let status = this.status;
 
         //判断前进还是后退，是否一个方向
@@ -282,10 +385,10 @@ export class Player extends AcGameObject {
                 this.ctx.drawImage(image, this.root.game_map.$canvas.width() - this.x - this.width, this.y + obj.offset_y, image.width * obj.scale, image.height * obj.scale);
 
                 this.ctx.restore();
-            }    
+            }
         }
 
-        
+
         if(status === 4 || status === 5 || status === 6){
             //攻击动画结束停止
             if(this.frame_current_cnt == obj.frame_rate * (obj.frame_cnt - 1)){
@@ -293,9 +396,9 @@ export class Player extends AcGameObject {
                     this.frame_current_cnt -- ;
                 } else {
                     this.status = 0;
-                }       
+                }
             }
-            
+
         }
 
 

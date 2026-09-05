@@ -1,54 +1,98 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>拳皇</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>拳皇 KOF</title>
     <link rel="stylesheet" href="base.css">
 </head>
 
 <body>
-    <div id="kof"></div>
-    
+    <!-- 游戏舞台容器：负责等比缩放，适配手机端与电脑端 -->
+    <div id="game-stage">
+        <div id="kof"></div>
+    </div>
+
+    <!-- 开始菜单：选择对战模式 -->
+    <div id="mode-select" class="overlay">
+        <div class="menu-box">
+            <h1 class="menu-title">拳 皇</h1>
+            <p class="menu-subtitle">KING OF FIGHTERS</p>
+
+            <div class="menu-section">
+                <button class="menu-btn primary" id="btn-pvp">双人对战 · 2 Players</button>
+            </div>
+
+            <div class="menu-section">
+                <div class="menu-label">人机对战 · vs AI</div>
+                <div class="difficulty-row">
+                    <button class="menu-btn ai" data-difficulty="easy">简单 Easy</button>
+                    <button class="menu-btn ai" data-difficulty="normal">普通 Normal</button>
+                    <button class="menu-btn ai" data-difficulty="hard">困难 Hard</button>
+                </div>
+            </div>
+
+            <div class="menu-hint">
+                <div><b>玩家一 P1：</b> W A S D 移动 / 跳跃，空格 攻击</div>
+                <div><b>玩家二 P2：</b> ↑ ← ↓ → 移动 / 跳跃，回车 Enter 攻击</div>
+                <div>手机端：点击右下角「触控」按钮开启虚拟按键</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 对战结束结算界面 -->
+    <div id="result-screen" class="overlay" style="display:none;">
+        <div class="menu-box">
+            <h1 class="result-title" id="result-title">胜利</h1>
+            <div class="menu-section">
+                <button class="menu-btn primary" id="btn-rematch">再来一局 · Rematch</button>
+            </div>
+            <div class="menu-section">
+                <button class="menu-btn" id="btn-menu">返回菜单 · Menu</button>
+            </div>
+        </div>
+    </div>
+
     <!-- 触控界面 -->
     <div id="mobile-controls">
-        <!-- 左侧控制区 -->
+        <!-- 左侧控制区 (P1: WASD + 空格) -->
         <div class="left-controls">
             <div class="d-pad">
-                <div class="d-pad-top" data-key="w"></div>
-                <div class="d-pad-bottom" data-key="s"></div>
-                <div class="d-pad-left" data-key="a"></div>
-                <div class="d-pad-right" data-key="d"></div>
+                <div class="d-pad-top" data-key="w">W</div>
+                <div class="d-pad-bottom" data-key="s">S</div>
+                <div class="d-pad-left" data-key="a">A</div>
+                <div class="d-pad-right" data-key="d">D</div>
                 <div class="d-pad-center"></div>
             </div>
             <div class="attack-btn" data-key=" ">空格</div>
         </div>
-        
-        <!-- 右侧控制区 -->
+
+        <!-- 右侧控制区 (P2: 方向键 + 回车) -->
         <div class="right-controls">
             <div class="arrow-pad">
-                <div class="arrow-up" data-key="ArrowUp"></div>
-                <div class="arrow-down" data-key="ArrowDown"></div>
-                <div class="arrow-left" data-key="ArrowLeft"></div>
-                <div class="arrow-right" data-key="ArrowRight"></div>
+                <div class="arrow-up" data-key="ArrowUp">↑</div>
+                <div class="arrow-down" data-key="ArrowDown">↓</div>
+                <div class="arrow-left" data-key="ArrowLeft">←</div>
+                <div class="arrow-right" data-key="ArrowRight">→</div>
                 <div class="arrow-center"></div>
             </div>
             <div class="attack-btn" data-key="Enter">Enter</div>
         </div>
     </div>
-    
+
     <!-- 触控切换按钮 - 始终显示 -->
     <div id="mobile-toggle">触控</div>
-    
+
     <script src="jquery-3.3.1.min.js"></script>
-    
+
     <script type="module">
         import {KOF} from './ba.js';
-        
+
         document.addEventListener("DOMContentLoaded", () => {
-            let kof = new KOF('kof');
-            console.log("Game initialized");
+            // 只创建一次 KOF 控制器；具体对局在选择模式后才开始
+            window.kof = new KOF('kof');
+            console.log("KOF controller initialized");
         });
     </script>
 </body>
